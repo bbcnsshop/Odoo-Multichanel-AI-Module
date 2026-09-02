@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from . import channel_config
+from . import channel_list_module
 from . import channel_product
 from . import channel_product_field_mapping
 from . import channel_product_image

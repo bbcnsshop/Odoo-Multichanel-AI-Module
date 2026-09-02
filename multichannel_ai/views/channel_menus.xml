@@ -16,6 +16,19 @@
                   sequence="5"
                   groups="multichannel_ai.group_multichannel_manager"/>
 
+        <menuitem id="menu_channel_list_module"
+                  name="Channel List Modules"
+                  parent="menu_online_sales_root"
+                  action="action_channel_list_module"
+                  sequence="3"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+        <menuitem id="menu_manage_channels"
+                  name="Manage Channels"
+                  parent="menu_online_sales_root"
+                  action="action_channel_config"
+                  sequence="5"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
         <menuitem id="menu_channel_products"
                   name="Channel Products"
                   parent="menu_online_sales_root"

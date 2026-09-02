@@ -63,6 +63,11 @@
                     <notebook>
                         <page string="Channel Data" name="channel_data">
                             <group>
+                                <group string="Platform-Specific">
+                                    <field name="barcode"/>
+                                    <field name="condition"/>
+                                    <field name="channel_brand"/>
+                                </group>
                                 <group string="Weight &amp; Dimensions">
                                     <field name="channel_weight"/>
                                     <field name="channel_length"/>
@@ -163,6 +168,13 @@
                 <separator/>
                 <filter name="shopee" string="Shopee" domain="[('channel_id.code', '=', 'shopee')]"/>
                 <filter name="lazada" string="Lazada" domain="[('channel_id.code', '=', 'lazada')]"/>
+                <filter name="error" string="Error" domain="[('sync_status', '=', 'error')]"/>
+                <filter name="incomplete" string="Incomplete" domain="[('has_missing_required', '=', True)]"/>
+                <separator/>
+                <filter name="condition_new" string="New" domain="[('condition', '=', 'new')]"/>
+                <filter name="condition_used" string="Used" domain="[('condition', '=', 'used')]"/>
+                <filter name="condition_refurbished" string="Refurbished" domain="[('condition', '=', 'refurbished')]"/>
+                <separator/>
                 <filter name="tiktok" string="TikTok" domain="[('channel_id.code', '=', 'tiktok')]"/>
                 <separator/>
                 <filter name="active" string="Active" domain="[('state', '=', 'active')]"/>

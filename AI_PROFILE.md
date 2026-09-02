@@ -292,6 +292,56 @@ env['ir.module.module'].search([('name', '=', 'multichannel_ai')]).button_upgrad
 ---
 
 ## 🎯 TODO ถัดไป (Phase 1 - Critical)
+## 🎯 TODO ถัดไป (Phase 1 - Critical)
+
+### 1. ✅ Platform-Specific Fields (เสร็จแล้ว 2026-09-02)
+```python
+# channel.product
+barcode = fields.Char(string='Barcode')  # Lazada required
+condition = fields.Selection([
+    ('new', 'New'),
+    ('used', 'Used'),
+    ('refurbished', 'Refurbished'),
+], string='Condition')
+```
+
+### 2. 🤖 AI Auto-Fill Functions (กำลังทำ)
+```python
+# channel.product
+def ai_auto_fill_fields(self):       # เติมทุก field
+def ai_suggest_barcode(self):        # barcode จาก SKU
+def ai_suggest_condition(self):      # new/used
+def ai_suggest_brand(self):          # brand จากชื่อ
+def cron_ai_auto_fill_missing(self): # cron รายวัน
+```
+
+### 3. 🖼️ Images & Videos (Plan)
+```python
+# channel.product.image (เพิ่ม)
+alt_text = fields.Char('Alt Text')
+image_type = fields.Selection([('main', 'Main'), ('gallery', 'Gallery')])
+
+# channel.product.video (ใหม่)
+class ChannelProductVideo(models.Model):
+    name = fields.Char('Filename')
+    video_path = fields.Char('Local Path')
+    storage_type = fields.Selection([('local', 'Local'), ('s3', 'S3')])
+    state = fields.Selection([('draft', 'Draft'), ('uploaded', 'Uploaded')])
+```
+
+### 4. Variant Operations (รอทำ)
+```python
+# channel.product.variant
+def action_create_from_template(self):  # สร้างจาก Odoo
+def get_platform_payload(self):        # JSON สำหรับ API
+def _validate_sku_unique(self):        # ตรวจ SKU ซ้ำ
+```
+
+### 5. Order Fulfillment (รอทำ)
+```python
+# channel.order
+def action_create_sale_order(self):    # สร้าง SO
+```
 
 ### 1. Platform-Specific Fields
 ```python

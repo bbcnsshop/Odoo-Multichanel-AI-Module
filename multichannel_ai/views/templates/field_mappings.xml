@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<template id="field_mappings_template" name="Field Mappings">
+    <t t-call="multichannel_ai.layout">
+        <div class="mc-container">
+            <div class="mc-header">
+                <h1>🔗 Field Mappings</h1>
+                <p>จัดการการแมปฟิลด์จาก Odoo ไป Platform</p>
+            </div>
+
+            <!-- Filter by Channel -->
+            <div class="mc-filter-bar">
+                <form method="get" action="/multichannel/field_mappings" class="mc-form-inline">
+                    <label>Channel:</label>
+                    <select name="channel_id" onchange="this.form.submit()">
+                        <option value="">All Channels</option>
+                        <t t-foreach="channels" t-as="ch">
+                            <option t-att-value="ch.id" t-att-selected="ch.id == selected_channel_id">
+                                <t t-esc="ch.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </form>
+            </div>
+
+            <!-- Mappings Table -->
+            <div class="mc-table-wrapper">
+                <table class="mc-table">
+                    <thead>
+                        <tr>
+                            <th>Channel</th>
+                            <th>Odoo Field</th>
+                            <th></th>
+                            <th>Platform Field</th>
+                            <th>Transform</th>
+                            <th>Default</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="mappings" t-as="m">
+                            <tr>
+                                <td>
+                                    <span class="mc-badge" t-att-data-channel="m.channel_id.code">
+                                        <t t-esc="m.channel_id.name"/>
+                                    </span>
+                                </td>
+                                <td><code t-esc="m.odoo_field"/></td>
+                                <td>→</td>
+                                <td><code t-esc="m.platform_field"/></td>
+                                <td>
+                                    <span class="mc-tag" t-esc="m.transform_type"/>
+                                </td>
+                                <td>
+                                    <t t-if="m.default_value">
+                                        <span t-esc="m.default_value"/>
+                                    </t>
+                                </td>
+                                <td>
+                                    <t t-if="m.is_required">
+                                        <span class="mc-required">✓</span>
+                                    </t>
+                                </td>
+                                <td>
+                                    <small t-esc="m.description or ''"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Help -->
+            <div class="mc-help-box">
+                <h3>💡 วิธีใช้ Field Mappings</h3>
+                <ul>
+                    <li><strong>Direct:</strong> ส่งค่า Odoo ไป Platform ตรงๆ</li>
+                    <li><strong>Multiply/Divide:</strong> คูณ/หาร ค่าด้วยตัวเลข (เช่น kg → g)</li>
+                    <li><strong>Lookup:</strong> แปลงค่า (เช่น new:NEW,used:USED)</li>
+                    <li><strong>Default:</strong> ค่าเริ่มต้นเมื่อ Odoo ไม่มีข้อมูล</li>
+                </ul>
+            </div>
+        </div>
+    </t>
+</template>
+</odoo>

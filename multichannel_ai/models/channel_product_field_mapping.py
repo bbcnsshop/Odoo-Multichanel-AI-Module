@@ -71,6 +71,14 @@ class ChannelProductFieldMapping(models.Model):
         elif self.odoo_field == 'channel_video_url':
             return channel_product.channel_video_url
         elif self.odoo_field == 'channel_brand':
+        elif self.odoo_field == 'channel_brand':
+            return channel_product.channel_brand
+        elif self.odoo_field == 'barcode':
+            return channel_product.barcode
+        elif self.odoo_field == 'condition':
+            return channel_product.condition
+        elif self.odoo_field == 'channel_length':
+            return channel_product.channel_length
             return channel_product.channel_brand
         elif self.odoo_field == 'channel_length':
             return channel_product.channel_length

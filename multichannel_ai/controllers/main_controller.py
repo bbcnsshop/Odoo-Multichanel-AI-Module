@@ -222,3 +222,90 @@ class MainController(http.Controller):
         
         result = ai_engine.recommend_price(product_data, channel_code)
         return result
+    @http.route('/multichannel/api/pricing', type='json', auth='user', methods=['POST'])
+    def calculate_pricing(self, **kwargs):
+        """API to calculate pricing with AI"""
+        product_id = kwargs.get('product_id')
+        channel_code = kwargs.get('channel_code')
+        
+        if not product_id or not channel_code:
+            return {'error': 'Missing product_id or channel_code'}
+        
+        product = request.env['product.product'].browse(int(product_id))
+        ai_engine = request.env['ai.engine'].get_default_engine()
+        
+        product_data = {
+            'name': product.display_name,
+            'cost': product.standard_price,
+            'category': product.categ_id.name if product.categ_id else 'IT Equipment'
+        }
+        
+        result = ai_engine.recommend_price(product_data, channel_code)
+        return result
+
+    @http.route('/multichannel/field_mappings', type='http', auth='user', website=False)
+    def field_mappings_page(self, channel_id=None, **kwargs):
+        """Field Mappings management page"""
+        _ensure_multichannel_user()
+        channels = request.env['channel.config'].search([('active', '=', True)])
+        domain = []
+        if channel_id:
+            domain.append(('channel_id', '=', int(channel_id)))
+        mappings = request.env['channel.product.field.mapping'].search(
+            domain, order='channel_id, sequence, id'
+        )
+        return request.render('multichannel_ai.field_mappings_template', {
+            'channels': channels,
+            'mappings': mappings,
+            'selected_channel_id': int(channel_id) if channel_id else None,
+        })
+
+    @http.route('/multichannel/api/field_mappings', type='json', auth='user', methods=['GET'])
+    def get_field_mappings(self, channel_id=None, **kwargs):
+        """API to get field mappings (User can read)"""
+        _ensure_multichannel_user()
+        domain = [('active', '=', True)]
+        if channel_id:
+            domain.append(('channel_id', '=', int(channel_id)))
+        mappings = request.env['channel.product.field.mapping'].search_read(
+            domain, ['id', 'channel_id', 'odoo_field', 'platform_field',
+                    'transform_type', 'default_value', 'is_required',
+                    'transform_value', 'description', 'sequence']
+        )
+        return {'success': True, 'mappings': mappings}
+
+    @http.route('/multichannel/api/field_mappings', type='json', auth='user', methods=['POST'])
+    def create_field_mapping(self, **kwargs):
+        """API to create field mapping (Manager only)"""
+        _ensure_multichannel_manager()
+        try:
+            mapping = request.env['channel.product.field.mapping'].create(kwargs)
+            return {'success': True, 'id': mapping.id}
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
+    @http.route('/multichannel/api/field_mappings/<int:mapping_id>', type='json', auth='user', methods=['PUT'])
+    def update_field_mapping(self, mapping_id, **kwargs):
+        """API to update field mapping (Manager only)"""
+        _ensure_multichannel_manager()
+        try:
+            mapping = request.env['channel.product.field.mapping'].browse(mapping_id)
+            if not mapping.exists():
+                return {'success': False, 'error': 'Mapping not found'}
+            mapping.write(kwargs)
+            return {'success': True}
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+
+    @http.route('/multichannel/api/field_mappings/<int:mapping_id>', type='json', auth='user', methods=['DELETE'])
+    def delete_field_mapping(self, mapping_id, **kwargs):
+        """API to delete field mapping (Manager only)"""
+        _ensure_multichannel_manager()
+        try:
+            mapping = request.env['channel.product.field.mapping'].browse(mapping_id)
+            if not mapping.exists():
+                return {'success': False, 'error': 'Mapping not found'}
+            mapping.unlink()
+            return {'success': True}
+        except Exception as e:
+            return {'success': False, 'error': str(e)}

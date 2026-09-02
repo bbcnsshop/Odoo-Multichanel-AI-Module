@@ -1,15 +1,15 @@
 # 📊 Multi-Channel AI Module — Progress Report
 
-**อัปเดต:** 2 กันยายน 2569 | **สถานะ:** 🟡 ~85% Complete
+**อัปเดต:** 2 กันยายน 2569 | **สถานะ:** 🟡 ~90% Complete
 
 ---
 
 ## 📁 โครงสร้าง
 ```
 multichannel_ai/
-├── models/           (10 models + 3 inherit)
-├── wizards/          (2)
-├── controllers/      (2)
+├── models/           (13 models + 3 inherit)
+├── wizards/          (3)
+├── controllers/      (3)
 ├── security/         (groups + 29 access rules)
 ├── views/            (Backend + Frontend UI)
 ├── data/             (demo_data)
@@ -25,190 +25,135 @@ ai_engine/
 
 | หมวด | % | หมายเหตุ |
 |------|---|-----------|
-| Models (10 หลัก) | 85% | core 100%, ขาด ~50 fields |
-| Wizards (2) | 100% | |
-| Controllers (2) | 100% | |
+| Models (13 หลัก) | 90% | core 100%, ขาด AI functions |
+| Wizards (3) | 100% | |
+| Controllers (3) | 100% | |
 | API Connectors | 60% | mock, ต้อง implement จริง |
 | Security | 100% | Backend/Frontend แยกแล้ว |
 | Tests | 80% | ขาด variant tests |
 | Crons (6) | 100% | |
 | i18n Thai | 100% | |
-| Frontend UI | 100% | 5 pages |
-| Channel List Module | 0% | 🚧 ใหม่ |
-| **รวม** | **~80%** | |
+| Frontend UI | 100% | 6 pages |
+| Channel List Module | 100% | ✅ สร้างเสร็จแล้ว |
+| Field Mappings | 100% | ✅ 17 default mappings |
+| **รวม** | **~90%** | |
 
 ---
 
-## 🛒 Channel List Module (ใหม่)
+## 🔗 Field Mappings (17 default mappings)
 
-**หลักการ:** Channel เป็น Module ที่เพิ่ม/ลบ/เปิด/ปิด ได้
+### Shopee (6 mappings)
+| Odoo Field | Platform Field | Transform | Required |
+|------------|---------------|-----------|----------|
+| name | title | Direct | ✅ |
+| list_price | price | Direct | ✅ |
+| barcode | item_id | Direct | ❌ |
+| condition | condition | Direct | ❌ |
+| channel_weight | weight | Direct | ❌ |
+| channel_brand | brand | Direct | ❌ |
 
-### Channel หลัก (Active)
-| Code | Name | Icon | API Status |
-|------|------|------|------------|
-| `shopee` | Shopee | 🛒 | ✅ Active |
-| `lazada` | Lazada | 🏪 | ✅ Active |
-| `tiktok` | TikTok Shop | 📱 | ✅ Active |
+### Lazada (6 mappings)
+| Odoo Field | Platform Field | Transform | Required |
+|------------|---------------|-----------|----------|
+| name | name | Direct | ✅ |
+| list_price | price | Direct | ✅ |
+| barcode | item_id | Direct | ✅ |
+| condition | condition_type | Lookup | ✅ |
+| channel_weight | weight | Direct | ❌ |
+| channel_brand | brand_name | Direct | ✅ |
 
-### Channel ที่จะเพิ่มได้ในอนาคต
-| Code | Name | Icon | สถานะ |
-|------|------|------|--------|
-| `line` | LINE Shopping | 💬 | 🚧 Plan |
-| `blibli` | Blibli | 🛍️ | 🚧 Plan |
-| `amazon` | Amazon | 📦 | 🚧 Plan |
-| `shopify` | Shopify | 🏬 | 🚧 Plan |
+### TikTok (5 mappings)
+| Odoo Field | Platform Field | Transform | Required |
+|------------|---------------|-----------|----------|
+| name | product_title | Direct | ✅ |
+| list_price | price | Direct | ✅ |
+| barcode | sku_code | Direct | ❌ |
+| condition | condition | Direct | ❌ |
+| channel_weight | weight | Direct | ❌ |
 
-### สิ่งที่ต้องสร้าง
-| Model | Fields | Functions | สถานะ |
-|-------|--------|-----------|--------|
-| `channel.list.module` | 0/8 | 0/4 | 🚧 0% |
-| - `name` | | | 🚧 |
-| - `code` | | | 🚧 |
-| - `icon` | | | 🚧 |
-| - `is_active` | | | 🚧 |
-| - `api_class` | | | 🚧 |
-| - `webhook_url` | | | 🚧 |
-| - `sync_method` | | | 🚧 |
-| - `config_model` | | | 🚧 |
-| **Functions** |
-| - `action_install()` | | | 🚧 |
-| - `action_uninstall()` | | | 🚧 |
-| - `action_activate()` | | | 🚧 |
-| - `action_deactivate()` | | | 🚧 |
+---
 
-### วิธีเพิ่ม Channel ใหม่
+## 🤖 AI Auto-Fill (Plan)
+
+| Function | คำอธิบาย | สถานะ |
+|----------|-----------|--------|
+| `ai_auto_fill_fields()` | เติมทุก field อัตโนมัติ | 🚧 Plan |
+| `ai_suggest_barcode()` | แนะนำ barcode จาก SKU | 🚧 Plan |
+| `ai_suggest_condition()` | แนะนำ condition (new/used) | 🚧 Plan |
+| `ai_suggest_brand()` | แนะนำ brand จากชื่อสินค้า | 🚧 Plan |
+| `cron_ai_auto_fill_missing()` | Cron รายวัน auto-fill | 🚧 Plan |
+
+### AI Fill Logic
 ```
-1. สร้าง record ใน channel.list.module
-2. สร้าง API Connector ใหม่
-3. สร้าง sync method
-4. สร้าง webhook endpoint
-5. สร้าง field mappings
+Barcode: product.barcode → default_code → Generate 'CH{channel}{id}'
+Condition: description (used/มือสอง) → default 'new'
+Brand: keyword matching (Apple, Samsung, Sony, Xiaomi, etc.)
 ```
 
 ---
 
-## ✅ Models ที่ทำเสร็จ
+## 🖼️ Images & Videos (Plan)
 
-| Model | Fields | Functions | สถานะ |
-|-------|--------|-----------|--------|
-| channel.config | 17/17 | 4/4 | ✅ 100% |
-| channel.product | 24/24 | 14/14 | ✅ core 100% |
-| channel.product.variant | 9/9 | 3/3 | ✅ base 100% |
-| channel.product.attribute | 10/10 | 3/3 | ✅ 100% |
-| channel.product.attribute.wizard | 3/3 | 1/1 | ✅ 100% |
-| channel.product.image | 16/16 | 11/11 | ✅ 100% |
-| channel.product.field.mapping | 13/13 | 4/4 | ✅ 100% |
-| channel.product.completeness | 7/7 | 2/2 | ✅ 100% |
-| channel.order | 21/21 | 7/7 | ✅ base 100% |
-| channel.order.line | 9/9 | 1/1 | ✅ 100% |
-| API Connectors (×3) | - | 16/16 | ✅ mock |
-| add.to.channel.bulk.wizard | 11/11 | 3/3 | ✅ 100% |
-| profit.calculator.wizard | 16/16 | 1/1 | ✅ 100% |
-| product.product (inherit) | 9/9 | 5/5 | ✅ 100% |
-| product.template (inherit) | 8/8 | 4/4 | ✅ 100% |
-| sale.order (inherit) | 4/4 | 2/2 | ✅ 100% |
+### Image Model (เพิ่ม fields)
+- `alt_text` - Alt text สำหรับ SEO
+- `image_type` - main/gallery/detail/thumbnail
+- `*_image_id` - Platform-specific IDs
+
+### Video Model (ใหม่)
+```python
+class ChannelProductVideo(models.Model):
+    name = fields.Char('Filename')
+    video_path = fields.Char('Local Path')
+    video_url = fields.Char('Public URL')
+    storage_type = fields.Selection(['local', 's3', 'cloudinary'])
+    duration = fields.Integer('Duration (s)')
+    file_size = fields.Integer('Size (bytes)')
+    state = fields.Selection(['draft', 'uploading', 'uploaded', 'error'])
+```
+
+### Storage Structure
+```
+/var/lib/odoo/filestore/multichannel_ai/videos/
+└── channel_{id}/product_{id}/video_001.mp4
+```
+
+### Platform Limits
+| Platform | Max Images | Video |
+|----------|-----------|-------|
+| Shopee | 50 | ✅ MP4 |
+| Lazada | 15 | ✅ MP4 |
+| TikTok | 9 | ✅ MP4 |
+| LINE | 10 | ❌ |
 
 ---
 
 ## ❌ ยังขาด
 
-### 🔴 Critical (~15)
-| Model | Field/Function | เหตุผล |
+### 🔴 Critical
+| Model | Field/Function | สถานะ |
 |-------|----------------|--------|
-| channel.product | `barcode`, `condition` | Platform required |
-| channel.product.variant | `action_create_from_template()` | สร้าง variants |
-| channel.product.variant | `get_platform_payload()` | ส่งไป platform |
-| channel.product.variant | `_validate_sku_unique()` | ป้องกัน SKU ซ้ำ |
-| channel.product.variant | `action_push_to_platform()` | sync ไป platform |
-| channel.order | `action_create_sale_order()` | สร้าง SO จากออร์เดอร์ |
-
-### 🟡 Medium (~20)
-| Model | Field/Function |
-|-------|----------------|
-| channel.product | `pre_order`, `warranty_*`, `dangerous_goods`, `compare_at_price` |
-| channel.product.variant | `weight`, `length/width/height`, `cost_price`, `action_bulk_sync` |
-| channel.product.image | `image_type`, `action_bulk_upload` |
-| channel.order | `tracking_number`, `shipping_carrier` |
-| channel.config | `webhook_url`, `country_code` |
-
-### 🟢 Low (~15)
-| Model | Field/Function |
-|-------|----------------|
-| channel.product | `min_price`, `max_price`, `low_watermark_stock`, analytics |
-| channel.product.variant | `unlink()`, `copy()` override |
-| channel.product.image | `alt_text`, `action_generate_360()` |
-| channel.order | `cancel_reason`, `refund_amount`, `action_refund()` |
-
-### 🎨 Marketing (~50)
-| หมวด | จำนวน |
-|------|-------|
-| รูปภาพ/วิดีโอ | 8 |
-| Social Proof | 7 |
-| Promotion | 8 |
-| Bundle & Upsell | 5 |
-| Content/Marketing | 6 |
-| SEO | 6 |
-| Trust Signals | 5 |
-| Badges | 5 |
-| Gift & Free Items | 4 |
-| Analytics | 4 |
-| **รวม** | **50** |
+| channel.product | `ai_auto_fill_fields()` | 🚧 Plan |
+| channel.product | `ai_suggest_*()` (3 functions) | 🚧 Plan |
+| channel.product | `cron_ai_auto_fill_missing()` | 🚧 Plan |
+| wizard | `ai_fill_wizard` | 🚧 Plan |
+| channel.product.image | `alt_text`, `image_type` | 🚧 Plan |
+| channel.product.video | **Model ใหม่** | 🚧 Plan |
+| controllers | `video_controller.py` | 🚧 Plan |
+| channel.product.variant | action_* functions | ⬜ Plan |
+| channel.order | action_create_sale_order | ⬜ Plan |
 
 ---
 
-## 🎯 Phase Plan
+## 📁 ไฟล์ที่ต้องสร้าง
 
-### 🔴 Phase 1: Critical
-1. **`channel.list.module`** → สร้าง model จัดการ Channel List
-2. `channel.product` → เพิ่ม barcode, condition
-3. `channel.product.variant` → action_create_from_template, get_platform_payload, _validate_sku_unique, action_push_to_platform
-4. `channel.order` → action_create_sale_order
-
-### 🟡 Phase 2: Important
-1. `channel.product` → pre_order, warranty, dangerous_goods, compare_at_price
-2. `channel.product.variant` → weight/dimensions, cost_price, action_bulk_sync
-3. `channel.product.image` → image_type, action_bulk_upload
-4. `channel.order` → tracking_number, shipping_carrier
-
-### 🟢 Phase 3: Enhancement
-1. Marketing fields (50 fields)
-2. Real API implementation
-
----
-
-## 📋 Todo Checklist
-
-### ✅ ทำเสร็จแล้ว
-- [x] All Core Models (10 หลัก + 3 inherit)
-- [x] Wizards (2)
-- [x] Controllers (2)
-- [x] Security (Backend/Frontend แยก)
-- [x] Views (Backend + Frontend)
-- [x] Cron Jobs (6)
-- [x] AI Engine
-- [x] Webhook Endpoints
-- [x] i18n Thai
-- [x] Demo Data
-- [x] Unit Tests (พื้นฐาน)
-
-### ❌ ต้องทำ
-- [ ] Platform-specific fields (barcode, condition, warranty, etc.)
-- [ ] Variant operations (create, validate, push)
-- [ ] Order fulfillment (create SO, tracking)
-- [ ] Marketing fields
-- [ ] Real API implementation
-- [ ] **Channel List Module** (ใหม่) - เพิ่ม/ลด/เปิด/ปิด Channel ได้
-  - [ ] channel.list.module model
-  - [ ] action_install/uninstall
-  - [ ] action_activate/deactivate
-  - [ ] Demo data: Shopee, Lazada, TikTok
-
----
-
-## 📝 หมายเหตุ
-- API ยังเป็น **Mock** — ต้อง implement จริงเมื่อได้ API keys
-- Tests ขาด variant + SKU tests
-- Module ใช้งานได้แล้วสำหรับ CRUD สินค้าและออร์เดอร์พื้นฐาน
+| ประเภท | ไฟล์ | คำอธิบาย |
+|--------|------|----------|
+| Models | `channel_product_video.py` | Model สำหรับ video |
+| Controllers | `video_controller.py` | Upload video endpoint |
+| Wizards | `channel_product_ai_fill_wizard.py` | Wizard สำหรับ AI fill |
+| Views | `channel_product_video_views.xml` | View สำหรับ video |
+| Views | `channel_product_ai_fill_wizard_views.xml` | View สำหรับ wizard |
+| Docs | `CHANGELOG.md` | บันทึกการเปลี่ยนแปลง |
 
 ---
 

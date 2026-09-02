@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+<record id="view_channel_list_module_tree" model="ir.ui.view">
+    <field name="name">channel.list.module.tree</field>
+    <field name="model">channel.list.module</field>
+    <field name="arch" type="xml">
+        <tree decoration-success="active==True" decoration-muted="active==False">
+            <field name="sequence" widget="handle"/>
+            <field name="icon"/>
+            <field name="name"/>
+            <field name="code"/>
+            <field name="country_code"/>
+            <field name="active" widget="boolean_toggle"/>
+            <field name="is_installed" widget="boolean_toggle"/>
+            <field name="config_count"/>
+            <field name="product_count"/>
+            <field name="order_count"/>
+        </tree>
+    </field>
+</record>
+
+<record id="view_channel_list_module_form" model="ir.ui.view">
+    <field name="name">channel.list.module.form</field>
+    <field name="model">channel.list.module</field>
+    <field name="arch" type="xml">
+        <form>
+            <header>
+                <button name="action_activate" string="Activate" type="object" invisible="active"/>
+                <button name="action_deactivate" string="Deactivate" type="object" invisible="not active"/>
+                <button name="action_test_connection" string="Test Connection" type="object" icon="fa-plug"/>
+            </header>
+            <sheet>
+                <div class="oe_title"><h1><field name="icon" style="font-size:24px"/> <field name="name"/></h1></div>
+                <group><group><field name="code"/><field name="sequence"/><field name="icon"/><field name="active"/><field name="is_installed"/></group><group><field name="country_code"/><field name="currency_code"/><field name="platform_url"/><field name="developer_url"/></group></group>
+                <notebook>
+                    <page string="API Configuration"><group><group><field name="api_class"/><field name="webhook_url"/><field name="sync_method"/><field name="config_model"/></group><group><field name="default_commission_rate"/><field name="default_payment_fee_rate"/><field name="default_shipping_fee_rate"/></group></group></page>
+                    <page string="Statistics"><group><field name="config_count" readonly="1"/><field name="product_count" readonly="1"/><field name="order_count" readonly="1"/></group><div class="row"><div class="col-4"><button name="action_view_configs" type="object" class="btn btn-outline-primary">Configurations</button></div><div class="col-4"><button name="action_view_products" type="object" class="btn btn-outline-success">Products</button></div><div class="col-4"><button name="action_view_orders" type="object" class="btn btn-outline-info">Orders</button></div></div></page>
+                    <page string="Description"><field name="description"/><field name="note"/></page>
+                </notebook>
+            </sheet>
+        </form>
+    </field>
+</record>
+
+<record id="view_channel_list_module_search" model="ir.ui.view">
+    <field name="name">channel.list.module.search</field>
+    <field name="model">channel.list.module</field>
+    <field name="arch" type="xml">
+        <search>
+            <field name="name"/><field name="code"/>
+            <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+            <filter string="Inactive" name="inactive" domain="[('active', '=', False)]"/>
+            <filter string="Installed" name="installed" domain="[('is_installed', '=', True)]"/>
+            <group expand="0" string="Group By"><filter string="Status" name="group_active" context="{'group_by': 'active'}"/></group>
+        </search>
+    </field>
+</record>
+
+<record id="action_channel_list_module" model="ir.actions.act_window">
+    <field name="name">Channel List</field>
+    <field name="res_model">channel.list.module</field>
+    <field name="view_mode">tree,form</field>
+    <field name="help" type="html"><p>Create your first Channel</p></field>
+</record>
+
+</data>
+</odoo>

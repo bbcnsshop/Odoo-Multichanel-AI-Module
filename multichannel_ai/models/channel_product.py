@@ -47,6 +47,21 @@ class ChannelProduct(models.Model):
     channel_width = fields.Float(string='Width (cm)', digits=(8, 2))
     channel_height = fields.Float(string='Height (cm)', digits=(8, 2))
     channel_brand = fields.Char(string='Brand', help='Platform-specific brand (Lazada requires this)')
+    
+    # ============================================================
+    # Platform-Specific Fields (Priority 1 - Critical)
+    # ============================================================
+    barcode = fields.Char(
+        string='Barcode',
+        help='สำหรับ Lazada (required) - รหัสสินค้า/Barcode ของ Platform'
+    )
+    condition = fields.Selection([
+        ('new', 'New'),
+        ('used', 'Used'),
+        ('refurbished', 'Refurbished'),
+    ], string='Condition', default='new',
+        help='สภาพสินค้า - Shopee และ Lazada ต้องการ field นี้'
+    )
     channel_description = fields.Text(string='Description', help='Channel-specific description override')
     channel_video_url = fields.Char(string='Video URL', help='Video URL for TikTok or Shopee')
     channel_completeness_ids = fields.One2many(

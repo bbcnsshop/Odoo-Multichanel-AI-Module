@@ -22,9 +22,15 @@
         "security/ir.model.access.csv",
         "security/res_groups.xml",
         "data/channel_data.xml",
+
+        "data/channel_data.xml",
+        "data/default_field_mappings.xml",
+        "data/category_mapping.xml",
         "data/category_mapping.xml",
         "data/cron.xml",
         "views/channel_menus.xml",
+
+        "views/channel_list_module_views.xml",
         "views/channel_config_views.xml",
         "views/channel_product_views.xml",
         "views/channel_field_mapping_views.xml",
@@ -43,6 +49,8 @@
         "views/templates/sync.xml",
         "views/templates/channels.xml"
     ],
+
+        "views/templates/field_mappings.xml",
     "demo": [
         "demo/demo.xml"
     ],
