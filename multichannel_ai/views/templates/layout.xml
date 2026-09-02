@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Frontend Web Layout (base) -->
+    <template id="frontend_layout" name="Multichannel Frontend Layout">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <title>Multi-Channel Manager</title>
+                <link rel="stylesheet"
+                      href="/multichannel_ai/static/src/css/frontend.css"/>
+                <script type="text/javascript"
+                        src="/multichannel_ai/static/src/js/frontend.js"/>
+            </t>
+            <t t-set="body_classname" t-value="'multichannel-frontend'"/>
+            <div class="mc-wrapper">
+                <!-- Sidebar -->
+                <nav class="mc-sidebar">
+                    <div class="mc-logo">
+                        <i class="fa fa-shopping-bag"/> Multi-Channel
+                    </div>
+                    <ul class="mc-menu">
+                        <li><a href="/multichannel"><i class="fa fa-dashboard"/> Dashboard</a></li>
+                        <li><a href="/multichannel/channels"><i class="fa fa-plug"/> Channels</a></li>
+                        <li><a href="/multichannel/products"><i class="fa fa-cube"/> Channel Products</a></li>
+                        <li><a href="/multichannel/sync"><i class="fa fa-refresh"/> Sync</a></li>
+                        <li><a href="/multichannel/orders"><i class="fa fa-shopping-cart"/> Orders</a></li>
+                    </ul>
+                    <div class="mc-user">
+                        <i class="fa fa-user-circle"/>
+                        <span t-esc="user.name"/>
+                    </div>
+                </nav>
+                <!-- Main -->
+                <main class="mc-main">
+                    <t t-raw="0"/>
+                </main>
+            </div>
+        </t>
+    </template>
+</odoo>

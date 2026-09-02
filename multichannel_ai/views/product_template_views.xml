@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Product Template Form: เพิ่ม Section "ช่องทาง" ใน Tab "การขาย" -->
+    <record id="view_product_template_form_channel" model="ir.ui.view">
+        <field name="name">product.template.form.channel</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name=&apos;sales&apos;]" position="inside">
+                <separator string="ช่องทางออนไลน์" colspan="2"/>
+                <group colspan="2" col="2">
+                    <group string="ช่องทางที่ขายอยู่" name="channel_toggles">
+                        <div class="o_row">
+                            <field name="is_on_shopee" class="oe_inline" nolabel="1"
+                                   widget="boolean_toggle"/>
+                            <label for="is_on_shopee" class="oe_inline mr-3"
+                                   string="Shopee"
+                                   style="font-weight: bold; color: #ee4d2d;"/>
+                            <field name="is_on_lazada" class="oe_inline" nolabel="1"
+                                   widget="boolean_toggle"/>
+                            <label for="is_on_lazada" class="oe_inline mr-3"
+                                   string="Lazada"
+                                   style="font-weight: bold; color: #0f146d;"/>
+                            <field name="is_on_tiktok" class="oe_inline" nolabel="1"
+                                   widget="boolean_toggle"/>
+                            <label for="is_on_tiktok" class="oe_inline"
+                                   string="TikTok"
+                                   style="font-weight: bold; color: #000000;"/>
+                        </div>
+                        <field name="is_sold_online" invisible="1"/>
+                        <field name="channel_product_count" string="จำนวนช่องทาง"
+                               decoration-info="channel_product_count &gt; 0"
+                               decoration-muted="channel_product_count == 0"/>
+                    </group>
+                    <group string="จัดการ" name="channel_manage">
+                        <button name="action_open_add_to_channel_wizard"
+                                string="+ เพิ่มไปช่องทาง"
+                                type="object"
+                                class="btn-primary oe_highlight"
+                                icon="fa-plus"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

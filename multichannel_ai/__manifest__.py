@@ -23,6 +23,7 @@
         "security/res_groups.xml",
         "data/channel_data.xml",
         "data/category_mapping.xml",
+        "data/cron.xml",
         "views/channel_menus.xml",
         "views/channel_config_views.xml",
         "views/channel_product_views.xml",
@@ -34,7 +35,16 @@
         "views/product_channel_search_views.xml",
         "views/profit_calculator_views.xml",
         "views/channel_product_image_views.xml",
-        "views/channel_product_attribute_views.xml"
+        "views/channel_product_attribute_views.xml",
+        "views/product_template_views.xml",
+        "views/templates/layout.xml",
+        "views/templates/dashboard.xml",
+        "views/templates/channel_products.xml",
+        "views/templates/sync.xml",
+        "views/templates/channels.xml"
+    ],
+    "demo": [
+        "demo/demo.xml"
     ],
     "assets": {
         "web.assets_backend": [

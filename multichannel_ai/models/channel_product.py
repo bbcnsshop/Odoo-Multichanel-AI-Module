@@ -205,6 +205,101 @@ class ChannelProduct(models.Model):
                 _logger.warning('Deleting synced product %s from %s' % (rec.name, rec.channel_id.name))
         return super().unlink()
 
+    # ============================================================
+    # Cron Job Methods
+    # ============================================================
+    @api.model
+    def cron_sync_pending_products(self):
+        """Auto sync all products in pending state."""
+        pending = self.search([
+            ('sync_status', '=', 'pending'),
+            ('state', 'in', ('active', 'draft')),
+        ], limit=100)
+        synced = 0
+        errors = 0
+        for cp in pending:
+            try:
+                cp.sync_to_channel()
+                synced += 1
+            except Exception as e:
+                errors += 1
+                _logger.error('Cron sync error for %s: %s' % (cp.name, str(e)))
+        _logger.info('Auto sync: %d synced, %d errors' % (synced, errors))
+        return True
+
+    @api.model
+    def cron_sync_channel_stock(self):
+        """Sync stock from Odoo to channels for all active products."""
+        active_cps = self.search([
+            ('state', '=', 'active'),
+        ])
+        updated = 0
+        for cp in active_cps:
+            new_qty = int(cp.product_id.qty_available or 0)
+            if new_qty != cp.channel_qty:
+                cp.write({'channel_qty': new_qty})
+                updated += 1
+        _logger.info('Stock sync: %d products updated' % updated)
+        return True
+
+    @api.model
+    def cron_refresh_ai_prices(self):
+        """Refresh AI-recommended prices for all channel products."""
+        cps = self.search([('state', 'in', ('active', 'draft'))], limit=200)
+        refreshed = 0
+        errors = 0
+        for cp in cps:
+            try:
+                ai = self.env['ai.engine'].get_default_engine()
+                result = ai.recommend_price(
+                    {
+                        'name': cp.product_id.name,
+                        'cost': cp.product_id.standard_price or 0,
+                    },
+                    cp.channel_id.code,
+                )
+                if result.get('selling_price'):
+                    cp.write({
+                        'ai_recommended_price': result.get('selling_price', 0),
+                    })
+                    refreshed += 1
+            except Exception as e:
+                errors += 1
+                _logger.error('AI price refresh error for %s: %s' % (cp.name, str(e)))
+        _logger.info('AI price refresh: %d updated, %d errors' % (refreshed, errors))
+        return True
+
+    @api.model
+    def cron_check_completeness(self):
+        """Run completeness check on all channel products."""
+        cps = self.search([])
+        for cp in cps:
+            try:
+                cp._compute_completeness()
+            except Exception as e:
+                _logger.error('Completeness check error for %s: %s' % (cp.name, str(e)))
+        return True
+
+    @api.model
+    def cron_sync_error_alert(self):
+        """Log alerts for products with sync errors."""
+        errored = self.search([('sync_status', '=', 'error')])
+        if errored:
+            _logger.warning(
+                'Channel Products with sync errors (%d): %s' % (
+                    len(errored),
+                    ', '.join(errored.mapped('name')[:10]),
+                )
+            )
+        return True
+
+    @api.model
+    def cron_fetch_channel_orders(self):
+        """Fetch new orders from channels (placeholder)."""
+        # In production, call Shopee/Lazada/TikTok APIs
+        _logger.info('Cron: Fetch channel orders (placeholder)')
+        return True
+
 
 class ProductCategoryMapping(models.Model):
     _name = 'product.category.mapping'

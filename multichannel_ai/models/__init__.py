@@ -7,3 +7,4 @@ from . import channel_product_attribute
 from . import channel_order
 from . import sale_order_channel
 from . import product_product_channel
+from . import product_template_channel
