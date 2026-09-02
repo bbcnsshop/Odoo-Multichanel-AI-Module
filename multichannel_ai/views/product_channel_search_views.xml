@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_product_product_search_channel" model="ir.ui.view">
+        <field name="name">product.product.search.channel</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_search_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name=&apos;filter_to_sell&apos;]" position="after">
+                <separator/>
+                <filter name="sold_online" string="Sold Online" domain="[(&apos;is_sold_online&apos;, &apos;=&apos;, True)]"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter name="group_by_sold_online" string="Sold Online" context="{&apos;group_by&apos;: &apos;is_sold_online&apos;}"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_product_product_tree_channel_list" model="ir.ui.view">
+        <field name="name">product.product.tree.channel.list</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_product_tree_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name=&apos;price&apos;]" position="after">
+                <field name="online_channel_count" optional="show" widget="badge" decoration-info="online_channel_count &gt; 0"/>
+                <field name="online_total_stock" optional="hide" sum="Total Online Stock"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

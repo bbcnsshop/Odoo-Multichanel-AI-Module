@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_channel_field_mapping_tree" model="ir.ui.view">
+        <field name="name">channel.product.field.mapping.tree</field>
+        <field name="model">channel.product.field.mapping</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom" create="true">
+                <field name="active" widget="boolean_toggle"/>
+                <field name="channel_id" options='{"no_create": true}'/>
+                <field name="sequence" widget="handle"/>
+                <field name="odoo_model"/>
+                <field name="odoo_field"/>
+                <field name="platform_field"/>
+                <field name="transform_type"/>
+                <field name="transform_value"/>
+                <field name="default_value"/>
+                <field name="is_required" widget="boolean_toggle"/>
+                <field name="missing_count"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_channel_field_mapping_form" model="ir.ui.view">
+        <field name="name">channel.product.field.mapping.form</field>
+        <field name="model">channel.product.field.mapping</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Channel">
+                            <field name="channel_id" options='{"no_create": true}'/>
+                            <field name="active"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group string="Mapping">
+                            <field name="odoo_model"/>
+                            <field name="odoo_field"/>
+                            <field name="platform_field"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Transform">
+                            <field name="transform_type"/>
+                            <field name="transform_value" attrs='{"required": [("transform_type", "in", ("multiply", "divide", "lookup"))]}'/>
+                        </group>
+                        <group string="Validation">
+                            <field name="is_required"/>
+                            <field name="default_value"/>
+                            <field name="validation_rule"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_channel_field_mapping_search" model="ir.ui.view">
+        <field name="name">channel.product.field.mapping.search</field>
+        <field name="model">channel.product.field.mapping</field>
+        <field name="arch" type="xml">
+            <search string="Search">
+                <field name="channel_id"/>
+                <field name="odoo_field"/>
+                <field name="platform_field"/>
+                <separator/>
+                <filter name="required" string="Required" domain="[('is_required', '=', True)]"/>
+                <separator/>
+                <filter name="by_channel" string="By Channel" context='{"group_by": "channel_id"}'/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_channel_field_mapping" model="ir.actions.act_window">
+        <field name="name">Field Mappings</field>
+        <field name="res_model">channel.product.field.mapping</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_neutral_face">Define how Odoo fields map to platform fields</p>
+        </field>
+    </record>
+</odoo>

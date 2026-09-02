@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_channel_product_attribute_tree" model="ir.ui.view">
+        <field name="name">channel.product.attribute.tree</field>
+        <field name="model">channel.product.attribute</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom" create="true">
+                <field name="active" widget="boolean_toggle"/>
+                <field name="channel_id" options="{&apos;no_create&apos;: True}"/>
+                <field name="channel_product_id" optional="hide" options="{&apos;no_create&apos;: True}"/>
+                <field name="sequence" widget="handle"/>
+                <field name="odoo_attribute_id"/>
+                <field name="odoo_value_id"/>
+                <field name="platform_attr_name"/>
+                <field name="platform_attr_value"/>
+                <field name="is_mandatory" widget="boolean_toggle"/>
+                <field name="is_custom" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_channel_product_attribute_form" model="ir.ui.view">
+        <field name="name">channel.product.attribute.form</field>
+        <field name="model">channel.product.attribute</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Channel">
+                            <field name="channel_id" options="{&apos;no_create&apos;: True}"/>
+                            <field name="channel_product_id" options="{&apos;no_create&apos;: True}"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Odoo Source">
+                            <field name="odoo_attribute_id"/>
+                            <field name="odoo_value_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Platform Mapping">
+                            <field name="platform_attr_name"/>
+                            <field name="platform_attr_value"/>
+                        </group>
+                        <group string="Options">
+                            <field name="sequence"/>
+                            <field name="is_mandatory"/>
+                            <field name="is_custom"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_channel_product_attribute_search" model="ir.ui.view">
+        <field name="name">channel.product.attribute.search</field>
+        <field name="model">channel.product.attribute</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="channel_id"/>
+                <field name="odoo_attribute_id"/>
+                <field name="platform_attr_name"/>
+                <separator/>
+                <filter name="mandatory" string="Mandatory" domain="[(&apos;is_mandatory&apos;, &apos;=&apos;, True)]"/>
+                <group expand="0" string="Group By">
+                    <filter name="by_channel" string="By Channel" context="{&apos;group_by&apos;: &apos;channel_id&apos;}"/>
+                    <filter name="by_attribute" string="By Attribute" context="{&apos;group_by&apos;: &apos;odoo_attribute_id&apos;}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_channel_product_attribute" model="ir.actions.act_window">
+        <field name="name">Attribute Mappings</field>
+        <field name="res_model">channel.product.attribute</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_channel_product_variant_tree" model="ir.ui.view">
+        <field name="name">channel.product.variant.tree</field>
+        <field name="model">channel.product.variant</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom" create="true">
+                <field name="product_variant_id" options="{&apos;no_create&apos;: True}"/>
+                <field name="variant_sku" readonly="1"/>
+                <field name="channel_price"/>
+                <field name="channel_qty"/>
+                <field name="channel_weight"/>
+                <field name="platform_variant_id" readonly="1"/>
+                <field name="sync_status" widget="badge"
+                       decoration-success="sync_status == &apos;synced&apos;"
+                       decoration-danger="sync_status == &apos;error&apos;"
+                       decoration-warning="sync_status == &apos;pending&apos;"/>
+                <button name="action_sync_variant" string="Sync" type="object" icon="fa-refresh"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_channel_product_variant_form" model="ir.ui.view">
+        <field name="name">channel.product.variant.form</field>
+        <field name="model">channel.product.variant</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="channel_product_id" options="{&apos;no_create&apos;: True}"/>
+                            <field name="product_variant_id"/>
+                            <field name="variant_sku" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="channel_price"/>
+                            <field name="channel_qty"/>
+                            <field name="channel_weight"/>
+                        </group>
+                    </group>
+                    <group string="Platform Info">
+                        <field name="platform_variant_id"/>
+                        <field name="platform_variant_url"/>
+                        <field name="sync_status" widget="badge"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_channel_product_variant" model="ir.actions.act_window">
+        <field name="name">Channel Variants</field>
+        <field name="res_model">channel.product.variant</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_attribute_wizard_form" model="ir.ui.view">
+        <field name="name">channel.product.attribute.wizard.form</field>
+        <field name="model">channel.product.attribute.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Auto-generate Attribute Mappings">
+                <group>
+                    <group string="Source">
+                        <field name="channel_product_id" options="{&apos;no_create&apos;: True}"/>
+                    </group>
+                    <group string="Platform Naming">
+                        <field name="use_default_name"/>
+                        <field name="override_platform_name"
+                               attrs="{&apos;invisible&apos;: [(&apos;use_default_name&apos;, &apos;=&apos;, True)]}"/>
+                    </group>
+                </group>
+                <separator string="What will happen?"/>
+                <div class="alert alert-info" role="alert">
+                    <p>All Odoo attribute values on this product will be created as platform mappings.</p>
+                    <p>For example: Color/Red -> Color/Red (or your custom name).</p>
+                    <p>Existing mappings for this product will be deleted and recreated.</p>
+                </div>
+                <footer>
+                    <button name="action_generate" string="Generate Mappings" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_attribute_wizard" model="ir.actions.act_window">
+        <field name="name">Auto-generate Attribute Mappings</field>
+        <field name="res_model">channel.product.attribute.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

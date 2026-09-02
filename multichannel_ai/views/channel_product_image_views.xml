@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_channel_product_image_tree" model="ir.ui.view">
+        <field name="name">channel.product.image.tree</field>
+        <field name="model">channel.product.image</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom" create="true">
+                <field name="sequence" widget="handle"/>
+                <field name="is_primary" widget="boolean_toggle"/>
+                <field name="source_type"/>
+                <field name="image_url"/>
+                <field name="upload_status" widget="badge"
+                       decoration-success="upload_status == &apos;uploaded&apos;"
+                       decoration-warning="upload_status == &apos;pending&apos;"
+                       decoration-danger="upload_status == &apos;error&apos;"/>
+                <field name="image_id_on_platform" readonly="1"/>
+                <field name="platform_image_url" readonly="1"/>
+                <field name="last_upload" optional="hide"/>
+                <button name="action_upload" string="Upload" type="object"
+                        icon="fa-upload"
+                        attrs="{&apos;invisible&apos;: [(&apos;upload_status&apos;, &apos;=&apos;, &apos;uploaded&apos;)]}"/>
+                <button name="action_retry_upload" string="Retry" type="object"
+                        icon="fa-refresh"
+                        attrs="{&apos;invisible&apos;: [(&apos;upload_status&apos;, &apos;!=&apos;, &apos;error&apos;)]}"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_channel_product_image_form" model="ir.ui.view">
+        <field name="name">channel.product.image.form</field>
+        <field name="model">channel.product.image</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Source">
+                            <field name="channel_product_id" options="{&apos;no_create&apos;: True}"/>
+                            <field name="sequence"/>
+                            <field name="is_primary"/>
+                        </group>
+                        <group string="Image Source">
+                            <field name="source_type"/>
+                            <field name="odoo_image_field"
+                                   attrs="{&apos;invisible&apos;: [(&apos;source_type&apos;, &apos;not in&apos;, (&apos;product&apos;, &apos;variant&apos;))]}"/>
+                            <field name="image_url"
+                                   attrs="{&apos;required&apos;: [(&apos;source_type&apos;, &apos;=&apos;, &apos;url&apos;)]}"/>
+                        </group>
+                    </group>
+                    <group string="Upload Status">
+                        <group>
+                            <field name="upload_status" widget="badge"/>
+                            <field name="image_id_on_platform" readonly="1"/>
+                            <field name="platform_image_url" readonly="1"/>
+                            <field name="upload_message" readonly="1"/>
+                            <field name="last_upload" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="width"/>
+                            <field name="height"/>
+                            <field name="file_size"/>
+                            <field name="checksum" readonly="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="action_upload" string="Upload to Platform" type="object" class="btn-primary"/>
+                        <button name="action_retry_upload" string="Retry Upload" type="object" class="btn-secondary"
+                                attrs="{&apos;invisible&apos;: [(&apos;upload_status&apos;, &apos;!=&apos;, &apos;error&apos;)]}"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_channel_product_image_search" model="ir.ui.view">
+        <field name="name">channel.product.image.search</field>
+        <field name="model">channel.product.image</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="channel_product_id"/>
+                <field name="channel_id"/>
+                <separator/>
+                <filter name="pending" string="Pending" domain="[(&apos;upload_status&apos;, &apos;=&apos;, &apos;pending&apos;)]"/>
+                <filter name="uploaded" string="Uploaded" domain="[(&apos;upload_status&apos;, &apos;=&apos;, &apos;uploaded&apos;)]"/>
+                <filter name="error" string="Error" domain="[(&apos;upload_status&apos;, &apos;=&apos;, &apos;error&apos;)]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter name="by_channel" string="By Channel" context="{&apos;group_by&apos;: &apos;channel_id&apos;}"/>
+                    <filter name="by_upload_status" string="By Status" context="{&apos;group_by&apos;: &apos;upload_status&apos;}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_channel_product_image" model="ir.actions.act_window">
+        <field name="name">Channel Product Images</field>
+        <field name="res_model">channel.product.image</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

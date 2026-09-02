@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_channel" model="ir.ui.view">
+        <field name="name">sale.order.form.channel</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name=&apos;partner_id&apos;]" position="after">
+                <field name="channel_id" options="{&apos;no_create&apos;: True}"/>
+                <field name="channel_order_code" readonly="1"/>
+            </xpath>
+            <xpath expr="//field[@name=&apos;note&apos;]" position="before">
+                <group string="Channel Info" col="4" attrs="{&apos;invisible&apos;: [(&apos;channel_id&apos;, &apos;=&apos;, False)]}">
+                    <field name="channel_shipping_fee" readonly="1"/>
+                    <field name="channel_discount" readonly="1"/>
+                    <field name="channel_order_id" readonly="1" options="{&apos;no_open&apos;: True}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_order_tree_channel" model="ir.ui.view">
+        <field name="name">sale.order.tree.channel</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name=&apos;state&apos;]" position="before">
+                <field name="channel_id" optional="show" widget="badge"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_order_search_channel" model="ir.ui.view">
+        <field name="name">sale.order.search.channel</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name=&apos;sales&apos;]" position="after">
+                <separator/>
+                <filter name="has_channel" string="From Channel" domain="[(&apos;channel_id&apos;, &apos;!=&apos;, False)]"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter name="group_by_channel" string="Channel" context="{&apos;group_by&apos;: &apos;channel_id&apos;}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

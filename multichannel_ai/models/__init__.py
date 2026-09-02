@@ -1,0 +1,9 @@
+# -*- coding: utf-8 -*-
+from . import channel_config
+from . import channel_product
+from . import channel_product_field_mapping
+from . import channel_product_image
+from . import channel_product_attribute
+from . import channel_order
+from . import sale_order_channel
+from . import product_product_channel

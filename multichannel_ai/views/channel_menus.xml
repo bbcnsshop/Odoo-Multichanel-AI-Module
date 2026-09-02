@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <menuitem id="menu_online_sales_root"
+                  name="Online Sales"
+                  sequence="50"
+                  groups="base.group_user"/>
+
+        <menuitem id="menu_manage_channels"
+                  name="Manage Channels"
+                  parent="menu_online_sales_root"
+                  action="action_channel_config"
+                  sequence="5"/>
+
+        <menuitem id="menu_channel_products"
+                  name="Channel Products"
+                  parent="menu_online_sales_root"
+                  action="action_channel_product"
+                  sequence="10"/>
+
+        <menuitem id="menu_add_to_channel"
+                  name="Add Products to Channel"
+                  parent="menu_online_sales_root"
+                  action="action_add_to_channel_bulk_wizard"
+                  sequence="15"/>
+
+        <menuitem id="menu_channel_images"
+                  name="Channel Images"
+                  parent="menu_online_sales_root"
+                  action="action_channel_product_image"
+                  sequence="18"/>
+        <menuitem id="menu_channel_attributes"
+                  name="Attribute Mappings"
+                  parent="menu_online_sales_root"
+                  action="action_channel_product_attribute"
+                  sequence="19"/>
+
+        <menuitem id="menu_field_mappings"
+                  name="Field Mappings"
+                  parent="menu_online_sales_root"
+                  action="action_channel_field_mapping"
+                  sequence="20"/>
+    </data>
+</odoo>

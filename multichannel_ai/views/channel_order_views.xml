@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Channel Order Views -->
+    <record id="view_channel_order_tree" model="ir.ui.view">
+        <field name="name">channel.order.tree</field>
+        <field name="model">channel.order</field>
+        <field name="arch" type="xml">
+            <tree decoration-success="state=='delivered'" decoration-info="state in ('confirmed','processing')" decoration-warning="state=='shipped'">
+                <field name="name"/>
+                <field name="channel_order_id"/>
+                <field name="channel_id"/>
+                <field name="customer_name"/>
+                <field name="order_date"/>
+                <field name="total_amount" sum="Total Amount"/>
+                <field name="state"/>
+                <button name="action_create_sale_order" type="object" string="Create SO" attrs="{'invisible': [('sale_order_id', '!=', False)]}" class="btn-primary"/>
+                <button name="action_view_delivery" type="object" string="DO" attrs="{'invisible': [('delivery_count', '=', 0)]}"/>
+                <button name="action_view_invoice" type="object" string="Invoice" attrs="{'invisible': [('invoice_count', '=', 0)]}"/>
+            </tree>
+        </field>
+    </record>
+    
+    <record id="view_channel_order_form" model="ir.ui.view">
+        <field name="name">channel.order.form</field>
+        <field name="model">channel.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_create_sale_order" type="object" string="Create Sale Order" class="btn-primary" attrs="{'invisible': [('sale_order_id', '!=', False)]}"/>
+                    <button name="action_create_invoice" type="object" string="Create Invoice" class="btn-success" attrs="{'invisible': [('sale_order_id', '=', False)]}"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                        <h3><field name="channel_id"/> - <field name="channel_order_id"/></h3>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="channel_id"/>
+                            <field name="order_date"/>
+                        </group>
+                        <group>
+                            <field name="customer_name"/>
+                            <field name="customer_email"/>
+                            <field name="customer_phone"/>
+                            <field name="partner_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Order Lines" name="lines">
+                            <field name="line_ids">
+                                <tree editable="bottom">
+                                    <field name="product_id"/>
+                                    <field name="product_name"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_price"/>
+                                    <field name="discount"/>
+                                    <field name="tax_rate"/>
+                                    <field name="subtotal" readonly="1"/>
+                                    <field name="total_amount" readonly="1"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="subtotal" class="oe_subtotal_footer_separator"/>
+                                <field name="tax_amount"/>
+                                <field name="shipping_cost"/>
+                                <field name="platform_fee"/>
+                                <field name="payment_fee"/>
+                                <div class="oe_subtotal_footer">
+                                    <field name="total_amount" class="oe_subtotal_footer_separator"/>
+                                </div>
+                            </group>
+                        </page>
+                        <page string="Addresses" name="addresses">
+                            <group>
+                                <group string="Shipping Address">
+                                    <field name="shipping_address" nolabel="1"/>
+                                </group>
+                                <group string="Billing Address">
+                                    <field name="billing_address" nolabel="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Related Documents" name="documents">
+                            <group>
+                                <field name="sale_order_id"/>
+                                <field name="delivery_count"/>
+                                <field name="invoice_count"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                    <field name="activity_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    
+    <record id="action_channel_order" model="ir.actions.act_window">
+        <field name="name">Channel Orders</field>
+        <field name="res_model">channel.order</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    
+    <menuitem id="menu_channel_order"
+              name="Channel Orders"
+              parent="base.menu_sales"
+              action="action_channel_order"
+              sequence="12"/>
+</odoo>

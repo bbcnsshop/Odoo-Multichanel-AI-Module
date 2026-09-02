@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_add_to_channel_bulk_wizard" model="ir.ui.view">
+        <field name="name">add.to.channel.bulk.wizard.form</field>
+        <field name="model">add.to.channel.bulk.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Add Products to Channel">
+                <group>
+                    <group string="Channel">
+                        <field name="channel_id" options="{&apos;no_create&apos;: True}"/>
+                    </group>
+                    <group string="Selection">
+                        <field name="selection_type" widget="radio"/>
+                        <field name="category_id" attrs="{&apos;invisible&apos;: [(&apos;selection_type&apos;, &apos;!=&apos;, &apos;category&apos;)], &apos;required&apos;: [(&apos;selection_type&apos;, &apos;=&apos;, &apos;category&apos;)]}"/>
+                        <field name="only_with_stock"/>
+                    </group>
+                </group>
+                <group string="Pricing">
+                    <group>
+                        <field name="use_ai_price"/>
+                        <field name="target_margin" attrs="{&apos;invisible&apos;: [(&apos;use_ai_price&apos;, &apos;=&apos;, False)]}"/>
+                    </group>
+                    <group>
+                        <field name="override_all_price" placeholder="Leave empty to use AI price"/>
+                    </group>
+                </group>
+                <group string="Stock">
+                    <field name="channel_qty_mode" widget="radio"/>
+                    <field name="custom_qty" attrs="{&apos;invisible&apos;: [(&apos;channel_qty_mode&apos;, &apos;!=&apos;, &apos;custom&apos;)], &apos;required&apos;: [(&apos;channel_qty_mode&apos;, &apos;=&apos;, &apos;custom&apos;)]}"/>
+                </group>
+                <separator string="Summary"/>
+                <div class="alert alert-info" role="alert">
+                    Will process <strong><field name="product_count" nolabel="1"/></strong> products
+                </div>
+                <footer>
+                    <button name="action_preview" string="Preview" type="object" class="btn-secondary"/>
+                    <button name="action_add_to_channel" string="Add to Channel" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_add_to_channel_bulk_wizard" model="ir.actions.act_window">
+        <field name="name">Add to Channel</field>
+        <field name="res_model">add.to.channel.bulk.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
