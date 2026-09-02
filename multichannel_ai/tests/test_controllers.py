@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo.tests import TransactionCase, tagged, HttpCase
+from odoo.exceptions import AccessDenied
 
 
 @tagged('post_install', '-at_install', 'multichannel')
@@ -11,6 +12,14 @@ class TestControllers(TransactionCase):
         self.ChannelConfig = self.env['channel.config']
         self.ChannelProduct = self.env['channel.product']
         self.ProductTemplate = self.env['product.template']
+
+        self.user_group = self.env.ref('multichannel_ai.group_multichannel_user')
+        self.manager_group = self.env.ref('multichannel_ai.group_multichannel_manager')
+        self.user = self.env['res.users'].create({
+            'name': 'MC Staff',
+            'login': 'mc_staff',
+            'groups_id': [(6, 0, [self.user_group.id])],
+        })
 
         self.channel = self.ChannelConfig.create({
             'name': 'Test Channel',

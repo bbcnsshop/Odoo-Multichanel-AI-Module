@@ -1,18 +1,32 @@
 # -*- coding: utf-8 -*-
 from odoo import http, _
 from odoo.http import request
+from odoo.exceptions import AccessDenied
 import json
 import logging
 
 _logger = logging.getLogger(__name__)
 
 
+def _ensure_multichannel_user():
+    """Ensure user has at least 'multichannel_ai.group_multichannel_user' group."""
+    if not request.env.user.has_group('multichannel_ai.group_multichannel_user'):
+        raise AccessDenied(_("You don't have access to Multi-Channel. Please contact your administrator."))
+
+
+def _ensure_multichannel_manager():
+    """Ensure user has 'multichannel_ai.group_multichannel_manager' group (admin actions)."""
+    if not request.env.user.has_group('multichannel_ai.group_multichannel_manager'):
+        raise AccessDenied(_("This action requires Multi-Channel Manager role."))
+
+
 class MainController(http.Controller):
-    """Main Controller for Multi-Channel E-Commerce"""
+    """Main Controller for Multi-Channel E-Commerce (Frontend for Staff/Manager)."""
     
-    @http.route('/multichannel/dashboard', type='http', auth='user')
+    @http.route('/multichannel/dashboard', type='http', auth='user', website=False)
     def dashboard(self, **kwargs):
         """Dashboard showing all channel summaries"""
+        _ensure_multichannel_user()
         channels = request.env['channel.config'].search([])
         
         # Get summary data for each channel
@@ -41,23 +55,26 @@ class MainController(http.Controller):
             'summary_data': summary_data,
         })
     
-    @http.route('/multichannel', type='http', auth='user')
+    @http.route('/multichannel', type='http', auth='user', website=False)
     def index(self, **kwargs):
         """Redirect to dashboard"""
+        _ensure_multichannel_user()
         return request.redirect('/multichannel/dashboard')
 
-    @http.route('/multichannel/channels', type='http', auth='user')
+    @http.route('/multichannel/channels', type='http', auth='user', website=False)
     def channels_page(self, **kwargs):
         """Channels management page"""
+        _ensure_multichannel_user()
         channels = request.env['channel.config'].search([])
         return request.render('multichannel_ai.channels_template', {
             'channels': channels,
         })
 
-    @http.route('/multichannel/products', type='http', auth='user',
+    @http.route('/multichannel/products', type='http', auth='user', website=False,
                 methods=['GET', 'POST'])
     def products_page(self, channel=None, state=None, search=None, page=1, **kwargs):
         """Channel products list page with filters and pagination"""
+        _ensure_multichannel_user()
         page = int(page) if page else 1
         per_page = 25
 
@@ -88,9 +105,10 @@ class MainController(http.Controller):
             'total_pages': total_pages,
         })
 
-    @http.route('/multichannel/sync', type='http', auth='user')
+    @http.route('/multichannel/sync', type='http', auth='user', website=False)
     def sync_page(self, **kwargs):
-        """Manual sync page"""
+        """Manual sync page (Manager only for full sync)"""
+        _ensure_multichannel_user()
         channels = request.env['channel.config'].search([])
         ch_stats = {}
         for ch in channels:
@@ -116,9 +134,10 @@ class MainController(http.Controller):
             'ch_stats': ch_stats,
         })
 
-    @http.route('/multichannel/orders', type='http', auth='user')
+    @http.route('/multichannel/orders', type='http', auth='user', website=False)
     def orders_page(self, **kwargs):
         """Orders list page"""
+        _ensure_multichannel_user()
         orders = request.env['channel.order'].search(
             [], limit=50, order='create_date desc'
         )
@@ -129,7 +148,8 @@ class MainController(http.Controller):
 
     @http.route('/multichannel/api/sync_product', type='json', auth='user')
     def api_sync_product(self, product_id=None, **kwargs):
-        """API: Sync single channel product"""
+        """API: Sync single channel product (Manager only)"""
+        _ensure_multichannel_manager()
         if not product_id:
             return {'success': False, 'error': 'Missing product_id'}
         try:
@@ -143,7 +163,8 @@ class MainController(http.Controller):
 
     @http.route('/multichannel/api/sync_channel', type='json', auth='user')
     def api_sync_channel(self, channel_id=None, **kwargs):
-        """API: Sync all products in a channel"""
+        """API: Sync all products in a channel (Manager only)"""
+        _ensure_multichannel_manager()
         if not channel_id:
             return {'success': False, 'error': 'Missing channel_id'}
         try:
@@ -169,7 +190,8 @@ class MainController(http.Controller):
     
     @http.route('/multichannel/api/products', type='json', auth='user', methods=['GET'])
     def get_products(self, channel_id=None, **kwargs):
-        """API to get products for a channel"""
+        """API to get products for a channel (User can read)"""
+        _ensure_multichannel_user()
         domain = [('state', '=', 'active')]
         if channel_id:
             domain.append(('channel_id', '=', int(channel_id)))
