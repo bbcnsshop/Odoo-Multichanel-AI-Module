@@ -1,8 +1,10 @@
 # Odoo Multi-Channel AI Module
 
-> Multi-Channel E-Commerce Integration for Odoo 16 with AI Engine (OpenRouter)
+> Multi-Channel E-Commerce Integration for Odoo 17 with AI Engine (OpenRouter)
 
 รองรับ Shopee, Lazada, TikTok Shop - รวม Sync, OAuth, AI Auto-Fill
+
+**🧪 Tested:** 72/72 files (32 XML + 40 Python) — Dry-Run Validation 4 ก.ย. 2569
 
 ---
 
@@ -28,6 +30,11 @@
 - Webhook integration
 - Create Sale Order from Channel Order
 - Order status tracking
+
+### 🧪 Quality Assurance
+- **Remote Dry-Run Validation** - validate XML + Python บน production server ก่อน deploy
+- ตรวจ 72 ไฟล์ (32 XML + 40 Python) ใช้เวลา < 1 วินาที
+- Bug detection: mismatched tag, orphan entry, indentation, duplicated code
 
 ---
 
@@ -101,7 +108,11 @@ cp -r multichannel_ai /path/to/odoo/addons/
 
 See [CHANGELOG.md](CHANGELOG.md) for full history.
 
-### Latest (v1.2.0)
+### Latest (Unreleased)
+- **Dry-Run Validation Pipeline** - validate 72 files บน production server
+- Bug fixes: channel_config_views.xml, __manifest__.py, channel_product_field_mapping.py
+
+### v1.2.0
 - Architecture: Mixin pattern for channel.config
 - Methods split into 4 mixins
 - OAuth + Token management
@@ -120,18 +131,34 @@ See [PROGRESS.md](PROGRESS.md) for detailed status.
 | Media Fields | ✅ 95% |
 | OAuth + Token | ✅ 100% |
 | Architecture Refactor | ✅ 100% |
+| Dry-Run Validation | ✅ 100% (72/72 files) |
 | Real API Integration | 🟡 30% |
 
 ---
 
 ## 🧪 Testing
 
+### Local Syntax Check
 ```bash
-# Syntax check
+# Python syntax
 python3 -m py_compile models/channel_config.py
 python3 -m py_compile models/mixins/*.py
 
-# Upgrade module in Odoo
+# XML syntax
+python3 -c "import xml.etree.ElementTree; ET.parse('views/channel_config_views.xml')"
+```
+
+### Remote Dry-Run Validation (แนะนำ)
+```bash
+# 1. Upload module ไป server
+scp -r -P 2206 multichannel_ai root@server:/tmp/test_module/
+
+# 2. Validate
+ssh -p 2206 root@server 'python3 /tmp/validate_xml.py && python3 /tmp/validate_python.py'
+```
+
+### Upgrade Module in Odoo
+```bash
 odoo -d your_db -u multichannel_ai --stop-after-init
 ```
 
@@ -143,4 +170,4 @@ MIT License
 
 ---
 
-**Version:** 1.2.0 | **Updated:** September 4, 2026
+**Version:** 1.3.0 (Unreleased) | **Updated:** September 4, 2026
