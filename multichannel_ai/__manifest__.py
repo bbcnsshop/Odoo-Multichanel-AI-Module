@@ -49,10 +49,9 @@
         "views/templates/dashboard.xml",
         "views/templates/channel_products.xml",
         "views/templates/sync.xml",
-        "views/templates/channels.xml"
+        "views/templates/channels.xml",
+        "views/templates/field_mappings.xml"
     ],
-
-        "views/templates/field_mappings.xml",
     "demo": [
         "demo/demo.xml"
     ],
