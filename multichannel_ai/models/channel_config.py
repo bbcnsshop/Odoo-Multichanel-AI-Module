@@ -1,75 +1,80 @@
 # -*- coding: utf-8 -*-
+# Main Channel Config Model - Fields only
 from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 import logging
 
 _logger = logging.getLogger(__name__)
 
 
 class ChannelConfig(models.Model):
+    """Main Channel Configuration Model.
+    
+    Methods are organized in mixins for better maintainability:
+    - SyncActionsMixin: sync products/orders
+    - TokenActionsMixin: token refresh
+    - ConnectionMixin: test connection
+    """
     _name = 'channel.config'
     _description = 'E-Commerce Channel'
     _order = 'sequence, name'
-    
-    name = fields.Char(string='Channel Name', required=True)
-    code = fields.Char(string='Code', required=True)
-    active = fields.Boolean(string='Active', default=True)
+    _inherit = ['mail.thread', 'channel.sync.actions', 'channel.token.actions', 
+                 'channel.connection', 'channel.counts']
+
+    name = fields.Char(string='Channel Name', required=True, tracking=True)
+    code = fields.Char(string='Code', required=True, tracking=True)
     sequence = fields.Integer(string='Sequence', default=10)
-    icon = fields.Char(string='Icon', default='🛒')
-    color = fields.Integer(string='Color Index', default=0)
-    
-    api_key = fields.Char(string='API Key', groups='base.group_system')
-    api_secret = fields.Char(string='API Secret', groups='base.group_system')
+    active = fields.Boolean(string='Active', default=True, tracking=True)
+    company_id = fields.Many2one('res.company', string='Company',
+                                 default=lambda self: self.env.company)
+
+    # Platform / Channel Type
+    platform = fields.Selection([
+        ('shopee', 'Shopee'),
+        ('lazada', 'Lazada'),
+        ('tiktok', 'TikTok Shop'),
+        ('line', 'LINE Shopping'),
+        ('facebook', 'Facebook Shop'),
+    ], string='Platform', required=True, tracking=True)
+
+    # API / Connection
+    api_url = fields.Selection([
+        ('sandbox', 'Sandbox (MOCK)'),
+        ('production', 'Production (Real API)'),
+    ], string='API Mode', default='sandbox', required=True)
+
+    base_url = fields.Char(string='Base URL')
+    partner_id = fields.Char(string='Partner ID')
+    partner_key = fields.Char(string='Partner Key')
     shop_id = fields.Char(string='Shop ID')
-    access_token = fields.Char(string='Access Token', groups='base.group_system')
-    
-    commission_rate = fields.Float(string='Commission (%)', default=5.0)
-    payment_fee_rate = fields.Float(string='Payment Fee (%)', default=2.0)
-    shipping_fee_rate = fields.Float(string='Shipping Subsidy (%)', default=2.5)
-    
-    default_warehouse_id = fields.Many2one('stock.warehouse', string='Default Warehouse')
-    default_pricelist_id = fields.Many2one('product.pricelist', string='Default Pricelist')
-    
-    product_count = fields.Integer(string='Products', compute='_compute_counts')
-    order_count = fields.Integer(string='Orders', compute='_compute_counts')
-    last_sync = fields.Datetime(string='Last Sync')
-    
-    _sql_constraints = [('code_unique', 'unique(code)', 'Code must be unique!')]
-    
-    @api.depends()
-    def _compute_counts(self):
+    access_token = fields.Char(string='Access Token', tracking=True)
+    refresh_token = fields.Char(string='Refresh Token')
+    token_expire_date = fields.Datetime(string='Token Expiry', tracking=True)
+
+    # ===========================
+    # Onchange & Constraints
+    # ===========================
+    @api.onchange('platform')
+    def _onchange_platform(self):
+        base_urls = {
+            'shopee': 'https://partner.shopeemobile.com',
+            'lazada': 'https://api.lazada.co.id/rest',
+            'tiktok': 'https://open-api.tiktokglobalshop.com',
+            'line': 'https://api.line.me',
+            'facebook': 'https://graph.facebook.com',
+        }
         for rec in self:
-            rec.product_count = self.env['channel.product'].search_count([('channel_id', '=', rec.id)])
-            rec.order_count = self.env['channel.order'].search_count([('channel_id', '=', rec.id)])
-    
-    def test_connection(self):
-        self.ensure_one()
-        try:
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {'title': _('Connection Test'), 'message': _('Connection to %s successful' % self.name), 'type': 'success'}
-            }
-        except Exception as e:
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {'title': _('Connection Failed'), 'message': str(e), 'type': 'danger'}
-            }
-    
-    def action_view_products(self):
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('Products - %s' % self.name),
-            'res_model': 'channel.product',
-            'view_mode': 'tree,form',
-            'domain': [('channel_id', '=', self.id)],
-        }
-    
-    def action_view_orders(self):
-        return {
-            'type': 'ir.actions.act_window',
-            'name': _('Orders - %s' % self.name),
-            'res_model': 'channel.order',
-            'view_mode': 'tree,form',
-            'domain': [('channel_id', '=', self.id)],
-        }
+            if rec.platform:
+                rec.base_url = base_urls.get(rec.platform, '')
+
+    @api.constrains('code')
+    def _check_code_unique(self):
+        for rec in self:
+            if self.search_count([('code', '=', rec.code), ('id', '!=', rec.id)]) > 0:
+                raise ValidationError(_('Channel code must be unique! Code: %s') % rec.code)
+
+    @api.constrains('api_url', 'partner_key', 'shop_id')
+    def _check_production_required(self):
+        for rec in self:
+            if rec.api_url == 'production' and not (rec.partner_key and rec.shop_id):
+                raise ValidationError(_('Production mode requires Partner Key and Shop ID.'))

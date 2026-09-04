@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Tree View -->
     <record id="view_channel_config_tree" model="ir.ui.view">
         <field name="name">channel.config.tree</field>
         <field name="model">channel.config</field>
@@ -13,15 +14,25 @@
                 <field name="product_count"/>
                 <field name="order_count"/>
             </tree>
-        </field>
-    </record>
-    
+    <!-- Form View -->
     <record id="view_channel_config_form" model="ir.ui.view">
         <field name="name">channel.config.form</field>
         <field name="model">channel.config</field>
         <field name="arch" type="xml">
             <form>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_test_connection" type="object" class="oe_stat_button" icon="fa-plug">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Test Connection</span>
+                            </div>
+                        </button>
+                        <button name="action_refresh_token" type="object" class="oe_stat_button" icon="fa-refresh">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_text">Refresh Token</span>
+                            </div>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <h1><field name="icon" readonly="1"/> <field name="name" placeholder="Channel Name"/></h1>
                     </div>
@@ -38,71 +49,64 @@
                             <field name="access_token" password="1"/>
                         </group>
                     </group>
-                    <notebook>
-                        <page string="Fee Rates" name="fees">
-                            <group>
-                                <group>
-                                    <field name="commission_rate"/>
-                                    <field name="payment_fee_rate"/>
-                                    <field name="shipping_fee_rate"/>
-                                </group>
-                            </group>
-                        </page>
-                        <page string="Defaults">
-                            <group>
-                                <field name="default_warehouse_id"/>
-                                <field name="default_pricelist_id"/>
-                            </group>
-                        </page>
-                        <page string="Statistics">
-                            <group>
-                                <field name="product_count" readonly="1"/>
-                                <field name="order_count" readonly="1"/>
-                                <field name="last_sync" readonly="1"/>
-                            </group>
-                        </page>
-                    </notebook>
                 </sheet>
             </form>
         </field>
     </record>
-    
+
+        </field>
+    </record>
+    <!-- Kanban View -->
     <record id="view_channel_config_kanban" model="ir.ui.view">
         <field name="name">channel.config.kanban</field>
         <field name="model">channel.config</field>
         <field name="arch" type="xml">
-            <kanban class="o_kanban_mobile">
+            <kanban>
                 <field name="name"/>
                 <field name="icon"/>
                 <field name="product_count"/>
                 <field name="order_count"/>
                 <field name="active"/>
-                <field name="color"/>
                 <templates>
                     <t t-name="kanban-box">
-                        <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_global_click">
+                        <div t-attf-class="oe_kanban_global_click">
                             <div class="o_kanban_record_top">
                                 <span class="o_kanban_record_title"><field name="icon"/> <field name="name"/></span>
-                                <t t-if="record.active.raw_value === true"><span class="badge badge-success">Active</span></t>
                             </div>
                             <div class="o_kanban_record_body">
                                 <div><field name="product_count"/> Products</div>
                                 <div><field name="order_count"/> Orders</div>
                             </div>
                             <div class="o_kanban_record_bottom">
-                                <button name="test_connection" string="Test" type="object" class="btn btn-sm btn-secondary"/>
+                                <button name="action_test_connection" string="Test" type="object" class="btn btn-sm btn-secondary"/>
                                 <button name="action_view_products" string="Products" type="object" class="btn btn-sm btn-secondary"/>
                             </div>
                         </div>
                     </t>
                 </templates>
+    <!-- Search View -->
+    <record id="view_channel_config_search" model="ir.ui.view">
+        <field name="name">channel.config.search</field>
+        <field name="model">channel.config</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <filter name="active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="inactive" string="Inactive" domain="[('active','=',False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_channel_config" model="ir.actions.act_window">
+        <field name="name">Channel Configs</field>
+        <field name="res_model">channel.config</field>
+        <field name="view_mode">tree,form,kanban</field>
+    </record>
+</odoo>
+
             </kanban>
         </field>
     </record>
-    
-    <record id="action_channel_config" model="ir.actions.act_window">
-        <field name="name">Manage Channels</field>
-        <field name="res_model">channel.config</field>
-        <field name="view_mode">kanban,form,tree</field>
-    </record>
-</odoo>
+

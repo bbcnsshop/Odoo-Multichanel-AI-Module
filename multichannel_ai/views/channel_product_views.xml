@@ -37,6 +37,16 @@
                     <div class="oe_title">
                         <h1><field name="name" readonly="1"/></h1>
                     </div>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" name="action_view_images" 
+                                type="object" icon="fa-picture-o">
+                            <field name="image_count" widget="statinfo" string="Images"/>
+                        </button>
+                        <button class="oe_stat_button" name="action_view_videos" 
+                                type="object" icon="fa-video-camera">
+                            <field name="video_count" widget="statinfo" string="Videos"/>
+                        </button>
+                    </div>
                     <group>
                         <group string="Product">
                             <field name="product_id" options='{"no_create": true}'/>
@@ -102,13 +112,12 @@
                                 <field name="sync_message" readonly="1"/>
                             </group>
                         </page>
-                    </notebook>
-
                         <page string="Images" name="images">
-                            <button name="%(action_channel_product_image)d" string="Add Image" type="action"
-                                    class="btn-secondary mb-2" context="{&apos;default_channel_product_id&apos;: id}"/>
-                            <field name="image_ids" context="{&apos;default_channel_product_id&apos;: active_id}">
-                                <tree editable="bottom">
+                            <field name="image_ids" context="{'default_channel_product_id': id}">
+                                <tree editable="bottom"
+                                      decoration-success="upload_status == 'uploaded'"
+                                      decoration-warning="upload_status == 'pending'"
+                                      decoration-danger="upload_status == 'error'">
                                     <field name="sequence" widget="handle"/>
                                     <field name="is_primary" widget="boolean_toggle"/>
                                     <field name="source_type"/>
@@ -119,14 +128,33 @@
                                 </tree>
                             </field>
                         </page>
-
+                        <page string="Videos" name="videos">
+                            <field name="video_ids" context="{'default_channel_product_id': id}">
+                                <tree editable="bottom"
+                                      decoration-success="state == 'uploaded'"
+                                      decoration-warning="state == 'uploading'"
+                                      decoration-danger="state == 'error'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="video_type"/>
+                                    <field name="is_primary" widget="boolean_toggle"/>
+                                    <field name="storage_type"/>
+                                    <field name="duration_display"/>
+                                    <field name="file_size_display"/>
+                                    <field name="state" widget="badge"/>
+                                    <field name="sync_count" string="Synced"/>
+                                    <button name="action_play_video" string="Play" type="object" icon="fa-play" invisible="not has_video"/>
+                                    <button name="action_upload_to_platforms" string="Upload" type="object" icon="fa-upload" invisible="state != 'ready'"/>
+                                </tree>
+                            </field>
+                        </page>
                         <page string="Variants" name="variants">
                             <div class="alert alert-info" role="alert">
                                 Variants are auto-created when sync runs. Use the Attribute Mappings tab to control how Odoo attribute values appear on the platform.
                             </div>
-                            <field name="variant_ids" context="{&apos;default_channel_product_id&apos;: active_id}">
+                            <field name="variant_ids" context="{'default_channel_product_id': id}">
                                 <tree editable="bottom">
-                                    <field name="product_variant_id" options="{&apos;no_create&apos;: True}"/>
+                                    <field name="product_variant_id" options="{'no_create': True}"/>
                                     <field name="variant_sku" readonly="1"/>
                                     <field name="channel_price"/>
                                     <field name="channel_qty"/>
@@ -139,9 +167,9 @@
                         </page>
                         <page string="Attribute Mappings" name="attribute_mappings">
                             <button name="%(action_attribute_wizard)d" string="Auto-generate from Odoo" type="action"
-                                    class="btn-primary mb-2" context="{&apos;default_channel_product_id&apos;: id}"/>
+                                    class="btn-primary mb-2" context="{'default_channel_product_id': id}"/>
                             <field name="attribute_mapping_ids"
-                                   context="{&apos;default_channel_id&apos;: channel_id, &apos;default_channel_product_id&apos;: id}">
+                                   context="{'default_channel_id': channel_id, 'default_channel_product_id': id}">
                                 <tree editable="bottom">
                                     <field name="active" widget="boolean_toggle"/>
                                     <field name="sequence" widget="handle"/>
@@ -153,6 +181,7 @@
                                 </tree>
                             </field>
                         </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>

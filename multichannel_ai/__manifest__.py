@@ -21,6 +21,7 @@
     "data": [
         "security/ir.model.access.csv",
         "security/res_groups.xml",
+        "security/channel_config_rule.xml",
         "data/channel_data.xml",
 
         "data/channel_data.xml",
@@ -41,6 +42,7 @@
         "views/product_channel_search_views.xml",
         "views/profit_calculator_views.xml",
         "views/channel_product_image_views.xml",
+        "views/channel_product_video_views.xml",
         "views/channel_product_attribute_views.xml",
         "views/product_template_views.xml",
         "views/templates/layout.xml",

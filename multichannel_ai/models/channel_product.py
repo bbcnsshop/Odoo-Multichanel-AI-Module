@@ -55,6 +55,29 @@ class ChannelProduct(models.Model):
         ('refurbished', 'Refurbished'),
     ], string='AI Suggested Condition')
     ai_brand_suggestion = fields.Char(string='AI Suggested Brand')
+    
+    # ============================================================
+    # MEDIA: Images & Videos
+    # ============================================================
+    image_ids = fields.One2many(
+        'channel.product.image',
+        'channel_product_id',
+        string='Images',
+    )
+    image_count = fields.Integer(
+        string='Image Count',
+        compute='_compute_image_count',
+    )
+    
+    video_ids = fields.One2many(
+        'channel.product.video',
+        'channel_product_id',
+        string='Videos',
+    )
+    video_count = fields.Integer(
+        string='Video Count',
+        compute='_compute_video_count',
+    )
 
     # Per-channel overrides
     channel_weight = fields.Float(string='Weight (kg)', digits=(8, 3), help='Weight override')
@@ -100,6 +123,49 @@ class ChannelProduct(models.Model):
     def _compute_name(self):
         for rec in self:
             rec.name = '%s (%s)' % (rec.product_id.name, rec.channel_id.name)
+
+    @api.depends('image_ids')
+    def _compute_image_count(self):
+        for record in self:
+            record.image_count = len(record.image_ids)
+
+    @api.depends('video_ids')
+    def _compute_video_count(self):
+        for record in self:
+            record.video_count = len(record.video_ids)
+
+    # ============================================================
+    # ACTIONS: View Media
+    # ============================================================
+    def action_view_images(self):
+        """เปิดหน้า Images ของ channel product นี้"""
+        self.ensure_one()
+        return {
+            'name': 'Images: %s' % self.display_name,
+            'type': 'ir.actions.act_window',
+            'res_model': 'channel.product.image',
+            'view_mode': 'tree,form,kanban',
+            'domain': [('channel_product_id', '=', self.id)],
+            'context': {
+                'default_channel_product_id': self.id,
+                'search_default_group_by_type': 1,
+            },
+        }
+
+    def action_view_videos(self):
+        """เปิดหน้า Videos ของ channel product นี้"""
+        self.ensure_one()
+        return {
+            'name': 'Videos: %s' % self.display_name,
+            'type': 'ir.actions.act_window',
+            'res_model': 'channel.product.video',
+            'view_mode': 'tree,form,kanban',
+            'domain': [('channel_product_id', '=', self.id)],
+            'context': {
+                'default_channel_product_id': self.id,
+                'search_default_group_by_channel': 1,
+            },
+        }
 
     @api.depends('channel_completeness_ids.completeness_pct',
                  'channel_completeness_ids.status',
