@@ -34,3 +34,9 @@ temp/
 # Odoo specific
 *.ovh
 *.csv
+
+# AI Assistant files (local only - ไม่ commit)
+AI_PROFILE.md
+PROGRESS.md
+CHANGELOG.md
+*.local.md
