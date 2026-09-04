@@ -159,7 +159,58 @@ Odoo-Multichanel-AI-Module/
 - [x] รองรับ VAT 7% (Thailand)
 - [x] Push ขึ้น GitHub
 - [x] สร้าง `.gitignore`
+- [x] **Wizard Auto-Fill Channel Product Fields**
+
+### 🔷 Wizards
+
+**AddToChannelBulkWizard:**
+- `action_add_to_channel()` - เพิ่มสินค้าจำนวนมาก
+- ตัวเลือก: AI Pricing, Fixed Price, Stock Mode
+
+**ProfitCalculatorWizard:**
+- `_compute_results()` - คำนวณกำไร Real-time
+- แสดง: VAT, Platform Fee, Payment Fee, Shipping, Margin %, Break-even
+
+**ChannelProductAIFillWizard:**
+- `action_fill()` - เติม barcode, condition, brand อัตโนมัติ
+- ตัวเลือก: เลือก Channel, Fill Barcode, Fill Condition, Fill Brand, Limit, Only Incomplete
 
 ---
 
 ## ⚙️ Function การทำงาน
+
+---
+
+## 📝 Change Log
+
+### 🔷 Channel Product - AI Auto-Fill (2026-09-02)
+
+| Feature | คำอธิบาย | สถานะ |
+|---------|-----------|--------|
+| `ai_suggest_barcode()` |  Recommendations barcode จาก product.barcode → default_code → CH{channel}{id} | ✅ เสร็จแล้ว |
+| `ai_suggest_condition()` |  Recommendations condition (new/used/refurbished) จาก description | ✅ เสร็จแล้ว |
+| `ai_suggest_brand()` |  Recommendations brand จากชื่อสินค้า (Apple, Samsung, Xiaomi, ฯลฯ) | ✅ เสร็จแล้ว |
+| `ai_auto_fill_fields()` |  เติมทุก field อัตโนมัติ (barcode, condition, brand) | ✅ เสร็จแล้ว |
+| `cron_ai_auto_fill_missing()` |  Cron รายวัน auto-fill products ที่ขาดข้อมูล | ✅ เสร็จแล้ว |
+| `channel_product_ai_fill_wizard` |  Wizard สำหรับ manual trigger AI auto-fill | ✅ เสร็จแล้ว |
+| `channel_product_ai_fill_views.xml` |  View สำหรับ AI Fill Wizard | ✅ เสร็จแล้ว |
+
+**AI Fill Logic:**
+```
+Barcode: product.barcode → default_code → Generate 'CH{channel}{id}'
+Condition: description (used/มือสอง) → default 'new'
+Brand: keyword matching (Apple, Samsung, Sony, Xiaomi, etc.)
+```
+
+---
+
+### v1.0.0 - 2026-09-02
+**Initial Release**
+
+#### ✅ สิ่งที่ทำเสร็จแล้ว:
+- [x] สร้างโครงสร้างโมดูล `ai_engine` และ `multichannel_ai`
+- [x] รองรับ OpenRouter API (GPT-4o, Claude, Gemini, etc.)
+- [x] เปลี่ยน `openrouter_model` เป็น Char field (ใส่ model name เองได้)
+- [x] รองรับ Free Models บน OpenRouter
+- [x] ระบบจำแนกประเภทสินค้าด้วย AI (`classify_product`)
+- [x] ระบบوصาชา price ด้วย AI (`recommend_price`)

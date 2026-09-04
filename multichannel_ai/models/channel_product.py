@@ -41,6 +41,21 @@ class ChannelProduct(models.Model):
     ai_recommended_price = fields.Float(string='AI Recommended Price')
     ai_confidence = fields.Float(string='AI Confidence')
 
+    # AI Auto-Fill Tracking
+    ai_auto_fill_date = fields.Datetime(string='AI Auto-Fill Date')
+    ai_auto_fill_status = fields.Selection([
+        ('pending', 'Pending'),
+        ('filled', 'Filled'),
+        ('error', 'Error'),
+    ], string='AI Auto-Fill Status', default='pending')
+    ai_barcode_suggestion = fields.Char(string='AI Suggested Barcode')
+    ai_condition_suggestion = fields.Selection([
+        ('new', 'New'),
+        ('used', 'Used'),
+        ('refurbished', 'Refurbished'),
+    ], string='AI Suggested Condition')
+    ai_brand_suggestion = fields.Char(string='AI Suggested Brand')
+
     # Per-channel overrides
     channel_weight = fields.Float(string='Weight (kg)', digits=(8, 3), help='Weight override')
     channel_length = fields.Float(string='Length (cm)', digits=(8, 2))
@@ -313,6 +328,212 @@ class ChannelProduct(models.Model):
         """Fetch new orders from channels (placeholder)."""
         # In production, call Shopee/Lazada/TikTok APIs
         _logger.info('Cron: Fetch channel orders (placeholder)')
+        return True
+
+    # ============================================================
+    # AI Auto-Fill Functions
+    # ============================================================
+
+    def ai_suggest_barcode(self):
+        """Suggest barcode for channel product.
+
+        Logic: product.barcode -> product.default_code -> Generate 'CH{channel}{id}'
+        """
+        self.ensure_one()
+        product = self.product_id
+
+        # Priority 1: Use product.barcode if available
+        if product.barcode:
+            return product.barcode
+
+        # Priority 2: Use product.default_code (internal reference)
+        if product.default_code:
+            return product.default_code
+
+        # Priority 3: Generate unique barcode
+        channel_code = self.channel_id.code[:3].upper() if self.channel_id else 'CHN'
+        return 'CH{}{:06d}'.format(channel_code, self.id)
+
+    def ai_suggest_condition(self):
+        """Suggest condition (new/used/refurbished) based on product description.
+
+        Logic: Check product description for keywords like 'มือสอง', 'used', 'refurbished'
+        """
+        self.ensure_one()
+        product = self.product_id
+
+        if not product or not product.description:
+            return 'new'
+
+        desc = product.description.lower()
+
+        # Check for used/refurbished keywords
+        used_keywords = ['มือสอง', 'second hand', 'used', 'second-hand', 'pre-owned', 'preowned']
+        refurbished_keywords = ['refurbished', 'reconditioned', 'remanufactured', 'รีเฟอร์', 'รีเฟอร์บิช']
+
+        for kw in refurbished_keywords:
+            if kw in desc:
+                return 'refurbished'
+
+        for kw in used_keywords:
+            if kw in desc:
+                return 'used'
+
+        return 'new'
+
+    def ai_suggest_brand(self):
+        """Suggest brand from product name using keyword matching.
+
+        Logic: Match known brand keywords from product name
+        """
+        self.ensure_one()
+        product = self.product_id
+
+        if not product or not product.name:
+            return False
+
+        name = product.name.lower()
+
+        # Known brands for IT/Electronics (Thailand market)
+        brand_keywords = {
+            'apple': 'Apple',
+            'samsung': 'Samsung',
+            'sony': 'Sony',
+            'xiaomi': 'Xiaomi',
+            'huawei': 'Huawei',
+            'oppo': 'OPPO',
+            'vivo': 'Vivo',
+            'realme': 'Realme',
+            'oneplus': 'OnePlus',
+            'nothing': 'Nothing',
+            'google': 'Google',
+            'microsoft': 'Microsoft',
+            'asus': 'ASUS',
+            'acer': 'ACER',
+            'lenovo': 'Lenovo',
+            'hp': 'HP',
+            'dell': 'Dell',
+            'msi': 'MSI',
+            'lg': 'LG',
+            'panasonic': 'Panasonic',
+            'canon': 'Canon',
+            'nikon': 'Nikon',
+            'fujifilm': 'Fujifilm',
+            'dyson': 'Dyson',
+            'jbl': 'JBL',
+            'bose': 'Bose',
+            'sennheiser': 'Sennheiser',
+            'audio-technica': 'Audio-Technica',
+            'logitech': 'Logitech',
+            'razer': 'Razer',
+            'corsair': 'Corsair',
+            'steelseries': 'SteelSeries',
+            'hyperx': 'HyperX',
+            'cooler master': 'Cooler Master',
+            'nzxt': 'NZXT',
+            'fractal design': 'Fractal Design',
+            'be quiet': 'Be Quiet!',
+            'seasonic': 'Seasonic',
+            'evga': 'EVGA',
+            'gigabyte': 'Gigabyte',
+            'asus rog': 'ASUS ROG',
+            'rog': 'ASUS ROG',
+        }
+
+        for keyword, brand in brand_keywords.items():
+            if keyword in name:
+                return brand
+
+        return False
+
+    def ai_auto_fill_fields(self):
+        """Auto-fill all AI-suggested fields for this channel product.
+        
+        Fills: barcode, condition, brand
+        Returns dict with filled fields and suggestions
+        """
+        self.ensure_one()
+        
+        results = {
+            'barcode': False,
+            'condition': False,
+            'brand': False,
+            'updated': False,
+        }
+        
+        try:
+            # Suggest barcode if missing
+            if not self.barcode:
+                barcode = self.ai_suggest_barcode()
+                self.barcode = barcode
+                results['barcode'] = barcode
+            
+            # Suggest condition if not set (still default 'new')
+            if not self.condition or self.condition == 'new':
+                condition = self.ai_suggest_condition()
+                if condition and condition != self.condition:
+                    self.condition = condition
+                    results['condition'] = condition
+            
+            # Suggest brand if missing
+            if not self.channel_brand:
+                brand = self.ai_suggest_brand()
+                if brand:
+                    self.channel_brand = brand
+                    results['brand'] = brand
+            
+            # Update AI tracking fields
+            results['updated'] = True
+            self.write({
+                'ai_auto_fill_date': fields.Datetime.now(),
+                'ai_auto_fill_status': 'filled',
+                'ai_barcode_suggestion': results['barcode'] or False,
+                'ai_condition_suggestion': results['condition'] or False,
+                'ai_brand_suggestion': results['brand'] or False,
+            })
+            
+            _logger.info('AI Auto-fill completed for %s: %s' % (self.name, results))
+            
+        except Exception as e:
+            _logger.error('AI Auto-fill error for %s: %s' % (self.name, str(e)))
+            self.write({
+                'ai_auto_fill_date': fields.Datetime.now(),
+                'ai_auto_fill_status': 'error',
+            })
+            results['error'] = str(e)
+        
+        return results
+
+    @api.model
+    def cron_ai_auto_fill_missing(self):
+        """Daily cron job to auto-fill missing fields for channel products.
+        
+        Targets: Products with missing barcode, condition, or brand
+        Limit: 200 records per run
+        """
+        # Search for products that need AI fill
+        domain = [
+            ('state', 'in', ('draft', 'active')),
+            '|', '|', '|',
+                ('barcode', '=', False),
+                ('channel_brand', '=', False),
+                ('condition', '=', 'new'),
+        ]
+        
+        cps = self.search(domain, limit=200)
+        filled_count = 0
+        error_count = 0
+        
+        for cp in cps:
+            try:
+                result = cp.ai_auto_fill_fields()
+                if result.get('updated'):
+                    filled_count += 1
+            except Exception as e:
+                error_count += 1
+                _logger.error('Cron AI auto-fill error for %s: %s' % (cp.name, str(e)))
+        
+        _logger.info('Cron AI auto-fill: %d filled, %d errors' % (filled_count, error_count))
         return True
 
 

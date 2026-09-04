@@ -63,6 +63,25 @@ class ChannelProductImage(models.Model):
     file_size = fields.Integer(string='File Size (bytes)')
     checksum = fields.Char(string='Checksum (MD5)')
 
+    # SEO & Image Type
+    alt_text = fields.Char(
+        string='Alt Text',
+        size=255,
+        help='Alt text สำหรับ SEO - คำอธิบายรูปภาพ'
+    )
+    image_type = fields.Selection([
+        ('main', 'Main Image'),
+        ('gallery', 'Gallery'),
+        ('detail', 'Detail Image'),
+        ('thumbnail', 'Thumbnail'),
+    ], string='Image Type', default='gallery',
+        help='ประเภทของรูปภาพ (main, gallery, detail, thumbnail)')
+
+    # Platform-specific IDs
+    shopee_image_id = fields.Char(string='Shopee Image ID', readonly=True)
+    lazada_image_id = fields.Char(string='Lazada Image ID', readonly=True)
+    tiktok_image_id = fields.Char(string='TikTok Image ID', readonly=True)
+
     @api.onchange('source_type')
     def _onchange_source_type(self):
         if self.source_type == 'product':
@@ -71,6 +90,66 @@ class ChannelProductImage(models.Model):
             self.odoo_image_field = 'image_variant_1920'
         else:
             self.odoo_image_field = False
+
+    @api.onchange('channel_product_id')
+    def _onchange_channel_product_id(self):
+        """Auto-generate alt_text เมื่อเปลี่ยน channel_product."""
+        if self.channel_product_id:
+            self._compute_default_alt_text()
+
+    @api.onchange('sequence', 'is_primary')
+    def _onchange_sequence_primary(self):
+        """Auto-set image_type จาก sequence/is_primary."""
+        self._compute_default_image_type()
+
+    def _compute_default_alt_text(self):
+        """Generate alt_text อัตโนมัติ: '{product_name} - {channel_name}'."""
+        self.ensure_one()
+        if not self.channel_product_id:
+            return
+
+        product_name = self.channel_product_id.product_id.name or 'Product'
+        channel_name = self.channel_product_id.channel_id.name or 'Channel'
+
+        self.alt_text = '%s - %s' % (product_name, channel_name)
+
+    def _compute_default_image_type(self):
+        """Set image_type จาก sequence/is_primary.
+
+        Logic:
+        - is_primary = True → 'main'
+        - sequence = 1 → 'main'
+        - 2 ≤ sequence ≤ 10 → 'gallery'
+        - sequence > 10 → 'thumbnail'
+        """
+        self.ensure_one()
+        if self.is_primary or self.sequence == 1:
+            self.image_type = 'main'
+        elif 2 <= self.sequence <= 10:
+            self.image_type = 'gallery'
+        elif self.sequence > 10:
+            self.image_type = 'thumbnail'
+        # ถ้า sequence < 1 (ไม่ควรเกิด) ปล่อย default
+
+    def action_regenerate_alt_text(self):
+        """ปุ่มสำหรับ regenerate alt_text ใหม่.
+
+        Returns: notification message
+        """
+        self.ensure_one()
+        old_alt = self.alt_text
+        self._compute_default_alt_text()
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Alt Text Regenerated'),
+                'message': _('Alt text updated: "%s" → "%s"') % (old_alt, self.alt_text),
+                'type': 'success',
+                'sticky': False,
+            }
+        }
 
     def _get_image_data(self):
         """Resolve image binary from source."""
