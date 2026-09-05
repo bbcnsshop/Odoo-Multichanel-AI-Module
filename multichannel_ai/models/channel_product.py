@@ -434,13 +434,6 @@ class ChannelProduct(models.Model):
             )
         return True
 
-    @api.model
-    def cron_fetch_channel_orders(self):
-        """Fetch new orders from channels (placeholder)."""
-        # In production, call Shopee/Lazada/TikTok APIs
-        _logger.info('Cron: Fetch channel orders (placeholder)')
-        return True
-
     # ============================================================
     # AI Auto-Fill Functions
     # ============================================================

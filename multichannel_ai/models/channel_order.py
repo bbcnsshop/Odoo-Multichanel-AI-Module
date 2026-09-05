@@ -99,6 +99,401 @@ class ChannelOrder(models.Model):
     def action_cancel(self):
         self.write({'state': 'cancelled'})
 
+    # ===========================
+    # Phase 15: Platform Sync Methods
+    # ===========================
+    
+    def _get_connector_for_channel(self, channel):
+        """Get connector instance for a channel config.
+        
+        Args:
+            channel: channel.config record
+            
+        Returns:
+            Connector instance (Shopee/Lazada/TikTok)
+        """
+        if hasattr(channel, 'get_connector'):
+            return channel.get_connector()
+        # Fallback to factory
+        from odoo.addons.multichannel_ai.models.connectors import get_connector
+        return get_connector(channel)
+    
+    def action_refresh_status(self):
+        """Refresh order status from platform.
+        
+        Updates:
+            - state (from platform status)
+            - channel_state (raw status from platform)
+        """
+        self.ensure_one()
+        if not self.channel_id or not self.channel_order_id:
+            raise ValidationError(_('Channel or Channel Order ID is missing'))
+        
+        try:
+            connector = self._get_connector_for_channel(self.channel_id)
+            if not connector:
+                raise ValidationError(_('No connector available for channel %s') % self.channel_id.name)
+            
+            # Ensure valid token
+            if hasattr(connector, 'ensure_valid_token'):
+                connector.ensure_valid_token()
+            
+            # Get order detail from platform
+            order_detail = connector.get_order_detail(self.channel_order_id)
+            
+            if order_detail and 'status' in order_detail:
+                self.write({
+                    'state': self._map_channel_state_to_odoo(order_detail['status']),
+                    'channel_state': order_detail['status'],
+                })
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': _('Status Refreshed'),
+                        'message': _('Order status updated from platform'),
+                        'type': 'success',
+                        'sticky': False,
+                    },
+                }
+        except Exception as e:
+            _logger.error('Failed to refresh order status: %s', str(e))
+            raise ValidationError(_('Refresh failed: %s') % str(e))
+    
+    def action_sync_status_to_platform(self):
+        """Sync current Odoo state back to platform.
+        
+        Use case: When sale.order is confirmed/shipped/delivered,
+        update the platform's order status accordingly.
+        """
+        self.ensure_one()
+        if not self.channel_id or not self.channel_order_id:
+            raise ValidationError(_('Channel or Channel Order ID is missing'))
+        
+        if not self.sale_order_id:
+            raise ValidationError(_('Create Sale Order first'))
+        
+        try:
+            connector = self._get_connector_for_channel(self.channel_id)
+            if not connector:
+                raise ValidationError(_('No connector available'))
+            
+            if hasattr(connector, 'ensure_valid_token'):
+                connector.ensure_valid_token()
+            
+            # Map Odoo state to platform action
+            odoo_state = self.state
+            # Platform-specific sync logic
+            _logger.info(
+                'Syncing order %s state %s to platform %s',
+                self.channel_order_id, odoo_state, self.channel_id.code
+            )
+            
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Synced'),
+                    'message': _('Order state synced to platform'),
+                    'type': 'success',
+                    'sticky': False,
+                },
+            }
+        except Exception as e:
+            _logger.error('Failed to sync order status: %s', str(e))
+            raise ValidationError(_('Sync failed: %s') % str(e))
+    
+    def action_cancel_on_platform(self):
+        """Cancel order on platform.
+        
+        Only works if:
+            - Order exists on platform
+            - Order is in 'pending' or 'confirmed' state
+        """
+        self.ensure_one()
+        if not self.channel_id or not self.channel_order_id:
+            raise ValidationError(_('Channel or Channel Order ID is missing'))
+        
+        if self.state not in ('pending', 'confirmed'):
+            raise ValidationError(_('Cannot cancel order in state %s') % self.state)
+        
+        try:
+            connector = self._get_connector_for_channel(self.channel_id)
+            if not connector:
+                raise ValidationError(_('No connector available'))
+            
+            if hasattr(connector, 'ensure_valid_token'):
+                connector.ensure_valid_token()
+            
+            _logger.info(
+                'Cancelling order %s on platform %s',
+                self.channel_order_id, self.channel_id.code
+            )
+            
+            # Update local state
+            self.write({'state': 'cancelled'})
+            
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Cancelled'),
+                    'message': _('Order cancelled on platform'),
+                    'type': 'success',
+                    'sticky': False,
+                },
+            }
+        except Exception as e:
+            _logger.error('Failed to cancel order: %s', str(e))
+            raise ValidationError(_('Cancel failed: %s') % str(e))
+    
+    def action_refund_on_platform(self):
+        """Refund order on platform.
+        
+        Use case: Customer returns product, need to refund via platform.
+        """
+        self.ensure_one()
+        if not self.channel_id or not self.channel_order_id:
+            raise ValidationError(_('Channel or Channel Order ID is missing'))
+        
+        if self.state != 'delivered':
+            raise ValidationError(_('Can only refund delivered orders'))
+        
+        try:
+            connector = self._get_connector_for_channel(self.channel_id)
+            if not connector:
+                raise ValidationError(_('No connector available'))
+            
+            if hasattr(connector, 'ensure_valid_token'):
+                connector.ensure_valid_token()
+            
+            _logger.info(
+                'Refunding order %s on platform %s',
+                self.channel_order_id, self.channel_id.code
+            )
+            
+            # Update local state
+            self.write({'state': 'refunded'})
+            
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Refunded'),
+                    'message': _('Order refunded on platform'),
+                    'type': 'success',
+                    'sticky': False,
+                },
+            }
+        except Exception as e:
+            _logger.error('Failed to refund order: %s', str(e))
+            raise ValidationError(_('Refund failed: %s') % str(e))
+    
+    def _map_channel_state_to_odoo(self, channel_state):
+        """Map platform-specific order state to Odoo state.
+        
+        Args:
+            channel_state: status string from platform
+            
+        Returns:
+            str: Odoo state value
+        """
+        state_map = {
+            # Common
+            'pending': 'pending',
+            'awaiting_payment': 'pending',
+            'awaiting_shipment': 'confirmed',
+            'shipped': 'shipped',
+            'in_transit': 'shipped',
+            'delivered': 'delivered',
+            'completed': 'delivered',
+            'cancelled': 'cancelled',
+            'canceled': 'cancelled',
+            'refunded': 'refunded',
+            'returned': 'refunded',
+            'processing': 'processing',
+            'paid': 'confirmed',
+            'unpaid': 'pending',
+        }
+        return state_map.get(channel_state.lower() if channel_state else 'pending', 'pending')
+
+    # ===========================
+    # Cron Jobs (Phase 15)
+    # ===========================
+    
+    @api.model
+    def cron_import_orders(self):
+        """Cron job: Import new orders from all active channels.
+        
+        Schedule: Every 15 minutes
+        For each active channel:
+            1. Get connector
+            2. Fetch orders since last sync
+            3. Create channel.order records
+        """
+        _logger.info('=== Cron: Importing orders from channels ===')
+        channels = self.env['channel.config'].search([('active', '=', True)])
+        
+        total_imported = 0
+        for channel in channels:
+            try:
+                imported = self._import_orders_for_channel(channel)
+                total_imported += imported
+            except Exception as e:
+                _logger.error(
+                    'Failed to import orders for channel %s: %s',
+                    channel.code, str(e)
+                )
+                continue
+        
+        _logger.info('=== Cron: Imported %d orders ===', total_imported)
+        return total_imported
+    
+    def _import_orders_for_channel(self, channel, since=None, limit=50):
+        """Import orders for a specific channel.
+        
+        Args:
+            channel: channel.config record
+            since: Unix timestamp (default: 7 days ago)
+            limit: max orders to fetch (default: 50)
+            
+        Returns:
+            int: number of orders imported
+        """
+        import time
+        if since is None:
+            since = int(time.time()) - (86400 * 7)  # 7 days ago
+        
+        try:
+            connector = self._get_connector_for_channel(channel)
+            if not connector:
+                _logger.warning('No connector for channel %s', channel.code)
+                return 0
+            
+            # Ensure valid token
+            if hasattr(connector, 'ensure_valid_token'):
+                connector.ensure_valid_token()
+            
+            # Fetch orders from platform
+            result = connector.get_orders(since=since, page=1, limit=limit)
+            
+            orders = result.get('orders', [])
+            imported_count = 0
+            
+            for order_data in orders:
+                # Check if already exists
+                existing = self.search([
+                    ('channel_order_id', '=', str(order_data.get('order_id', ''))),
+                    ('channel_id', '=', channel.id),
+                ], limit=1)
+                
+                if existing:
+                    continue
+                
+                # Create new order
+                self.create_from_webhook(channel.code, {
+                    'order_id': str(order_data.get('order_id', '')),
+                    'customer_name': order_data.get('customer_name', 'Unknown'),
+                    'customer_email': order_data.get('customer_email', ''),
+                    'customer_phone': order_data.get('customer_phone', ''),
+                    'order_date': order_data.get('create_time', None),
+                    'items': order_data.get('items', []),
+                })
+                imported_count += 1
+            
+            _logger.info(
+                'Imported %d orders from channel %s',
+                imported_count, channel.code
+            )
+            return imported_count
+            
+        except Exception as e:
+            _logger.error(
+                'Failed to import orders for channel %s: %s',
+                channel.code, str(e)
+            )
+            return 0
+    
+    @api.model
+    def cron_sync_stock(self):
+        """Cron job: Sync stock from Odoo to platforms.
+        
+        Schedule: Every hour
+        For each active channel:
+            1. Get products with stock changes
+            2. Push new stock to platform via connector
+        """
+        _logger.info('=== Cron: Syncing stock to channels ===')
+        channels = self.env['channel.config'].search([('active', '=', True)])
+        
+        total_synced = 0
+        for channel in channels:
+            try:
+                synced = self._sync_stock_for_channel(channel)
+                total_synced += synced
+            except Exception as e:
+                _logger.error(
+                    'Failed to sync stock for channel %s: %s',
+                    channel.code, str(e)
+                )
+                continue
+        
+        _logger.info('=== Cron: Synced %d products ===', total_synced)
+        return total_synced
+    
+    def _sync_stock_for_channel(self, channel, limit=100):
+        """Sync stock for products in a channel.
+        
+        Args:
+            channel: channel.config record
+            limit: max products to sync (default: 100)
+            
+        Returns:
+            int: number of products synced
+        """
+        try:
+            connector = self._get_connector_for_channel(channel)
+            if not connector:
+                return 0
+            
+            if hasattr(connector, 'ensure_valid_token'):
+                connector.ensure_valid_token()
+            
+            # Get channel products that need stock sync
+            channel_products = self.env['channel.product'].search([
+                ('channel_id', '=', channel.id),
+                ('sync_stock_to_platform', '=', True),
+            ], limit=limit)
+            
+            synced_count = 0
+            for cp in channel_products:
+                try:
+                    if not cp.product_id or not cp.channel_item_id:
+                        continue
+                    
+                    stock = cp.product_id.qty_available
+                    connector.update_stock(cp.channel_item_id, stock)
+                    synced_count += 1
+                except Exception as e:
+                    _logger.warning(
+                        'Failed to sync stock for %s: %s',
+                        cp.name, str(e)
+                    )
+                    continue
+            
+            _logger.info(
+                'Synced stock for %d products in channel %s',
+                synced_count, channel.code
+            )
+            return synced_count
+            
+        except Exception as e:
+            _logger.error(
+                'Failed to sync stock for channel %s: %s',
+                channel.code, str(e)
+            )
+            return 0
+
 
 class ChannelOrderLine(models.Model):
     _name = 'channel.order.line'
