@@ -4,7 +4,11 @@
 
 รองรับ Shopee, Lazada, TikTok Shop - รวม Sync, OAuth, AI Auto-Fill
 
-**🧪 Tested:** 72/72 files (32 XML + 40 Python) — Dry-Run Validation 4 ก.ย. 2569
+**🧪 Tested:** 235/235 unit tests across 24 test files — 5 ก.ย. 2569
+
+**📊 Coverage:** All models + Wizards + Mixins + Connectors (Shopee/Lazada/TikTok) + Cron + OAuth
+
+**✅ Phases 14-25 Complete:** More Tests, Order Implementation, Connector Implementation, View Buttons, Connector Tests, Cron Tests, OAuth Tests, Wizard Tests, Mixin Tests, Code Quality Check
 
 ---
 
@@ -12,8 +16,22 @@
 
 ### 🛒 Multi-Channel Support
 - Shopee, Lazada, TikTok Shop
-- Sandbox (MOCK) / Production mode
-- OAuth token management
+- Sandbox (MOCK) / Production mode (`api_url='sandbox'` / `api_url='production'`)
+- OAuth token management with auto-refresh
+- 39 connector methods (13 per platform × 3 platforms)
+
+### 🧙 Wizards (5 wizards)
+- **Add to Channel Wizard** - Add products to channel with preview
+- **Channel List Add Wizard** - Add new platform channel
+- **Channel Product AI Fill Wizard** - Bulk AI auto-fill
+- **Channel Product Attribute Wizard** - Generate attribute mappings
+- **Profit Calculator Wizard** - Calculate profit with fees
+
+### 🔧 Mixins (4 mixins)
+- **ConnectionMixin** - Connector factory + test connection
+- **CountsMixin** - Computed counts + navigation actions
+- **SyncActionsMixin** - Bulk sync actions
+- **TokenActionsMixin** - Token refresh + cron job
 
 ### 🤖 AI Engine (OpenRouter)
 - Auto-fill product fields (barcode, condition, brand)
@@ -86,6 +104,33 @@ cp -r multichannel_ai /path/to/odoo/addons/
 1. Click **Sync Orders**
 2. Orders will appear in **Sales > Channels > Orders**
 3. Click **Create Sale Order** to convert
+
+---
+
+## 🧪 Test Suite (235 Tests)
+
+### Test Coverage
+
+| Category | Tests | Files |
+|----------|-------|-------|
+| Models | 113 | 14 |
+| Connectors (Shopee/Lazada/TikTok) | 53 | 3 |
+| Controllers | 16 | 2 |
+| Cron Jobs | 19 | 1 |
+| OAuth | 17 | 1 |
+| Wizards | 17 | 1 |
+| Mixins | 16 | 1 |
+| **Total** | **235** | **24** |
+
+### Running Tests
+
+```bash
+# On Odoo server
+odoo-bin -d DB_BBCNS -i multichannel_ai --test-enable --stop-after-init
+
+# Specific test
+odoo-bin -d DB_BBCNS -u multichannel_ai -t test_channel_order
+```
 
 ---
 
