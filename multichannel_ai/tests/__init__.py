@@ -15,3 +15,6 @@ from . import test_channel_product_field_mapping
 from . import test_category_mapping
 from . import test_sale_order_channel
 from . import test_product_product_channel
+from . import test_shopee_connector
+from . import test_lazada_connector
+from . import test_tiktok_connector
