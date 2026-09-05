@@ -7,3 +7,11 @@ from . import test_controllers
 from . import test_video_connector
 from . import test_image_connector
 from . import test_controller_routes
+from . import test_channel_order
+from . import test_price_recommendation
+from . import test_channel_product_variant
+from . import test_channel_product_attribute
+from . import test_channel_product_field_mapping
+from . import test_category_mapping
+from . import test_sale_order_channel
+from . import test_product_product_channel
