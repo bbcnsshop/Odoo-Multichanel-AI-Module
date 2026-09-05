@@ -213,10 +213,16 @@
                                     <field name="sync_message" readonly="1"/>
                                 </group>
                                 <group string="AI Auto-Fill">
+                                    <button name="ai_auto_fill_fields" type="object" string="AI Auto-Fill All" class="btn-primary"/>
                                     <field name="ai_auto_fill_status"/>
                                     <field name="ai_auto_fill_date" readonly="1"/>
+                                </group>
+                                <group string="AI Suggestions">
+                                    <button name="ai_suggest_barcode" type="object" string="Suggest Barcode" class="btn-info"/>
                                     <field name="ai_barcode_suggestion" readonly="1"/>
+                                    <button name="ai_suggest_condition" type="object" string="Suggest Condition" class="btn-info"/>
                                     <field name="ai_condition_suggestion" readonly="1"/>
+                                    <button name="ai_suggest_brand" type="object" string="Suggest Brand" class="btn-info"/>
                                     <field name="ai_brand_suggestion" readonly="1"/>
                                 </group>
                             </group>
