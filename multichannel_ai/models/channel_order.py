@@ -527,13 +527,79 @@ class ChannelOrderLine(models.Model):
     subtotal = fields.Float(string='Subtotal', compute='_compute_subtotal', store=True)
     tax_amount = fields.Float(string='Tax Amount', compute='_compute_subtotal', store=True)
     total_amount = fields.Float(string='Total', compute='_compute_subtotal', store=True)
-    
+
+    # Additional fields
+    discount_amount = fields.Float(string='Discount Amount', default=0.0)
+    variation_name = fields.Char(string='Variation Name')
+    sku = fields.Char(string='SKU')
+    image_url = fields.Char(string='Image URL')
+
+    # Computed fields
+    margin = fields.Float(string='Margin %', compute='_compute_margin', store=True, digits=(5, 2))
+    has_product = fields.Boolean(string='Has Odoo Product', compute='_compute_has_product', store=True)
+
     @api.depends('quantity', 'unit_price')
     def _compute_subtotal(self):
         for line in self:
             line.subtotal = line.quantity * line.unit_price
             line.tax_amount = line.subtotal * 0.07
             line.total_amount = line.subtotal + line.tax_amount
+
+    @api.depends('subtotal', 'product_id.standard_price', 'quantity')
+    def _compute_margin(self):
+        """Calculate margin based on subtotal vs cost."""
+        for line in self:
+            if line.product_id and line.product_id.standard_price and line.subtotal:
+                cost = line.product_id.standard_price * line.quantity
+                line.margin = ((line.subtotal - cost) / line.subtotal * 100) if line.subtotal else 0
+            else:
+                line.margin = 0.0
+
+    @api.depends('product_id')
+    def _compute_has_product(self):
+        """Set has_product based on product_id."""
+        for line in self:
+            line.has_product = bool(line.product_id)
+
+    def action_link_odoo_product(self):
+        """Try to find matching Odoo product by SKU or name."""
+        self.ensure_one()
+        if self.product_id:
+            return {'type': 'ir.actions.client', 'tag': 'display_notification',
+                    'params': {'title': _('Already Linked'), 'message': _('Already linked'), 'type': 'info'}}
+
+        # Try by SKU
+        product = False
+        if self.sku:
+            product = self.env['product.product'].search([('default_code', '=', self.sku)], limit=1)
+
+        # Try by name
+        if not product and self.name:
+            product = self.env['product.product'].search([('name', '=', self.name)], limit=1)
+
+        if product:
+            self.product_id = product.id
+            return {'type': 'ir.actions.client', 'tag': 'display_notification',
+                    'params': {'title': _('Linked'), 'message': _('Linked to %s' % product.name), 'type': 'success'}}
+
+        raise UserError(_('No matching product found.'))
+
+    def _prepare_sale_order_line_vals(self):
+        """Prepare vals for sale.order.line."""
+        self.ensure_one()
+        return {
+            'product_id': self.product_id.id if self.product_id else False,
+            'name': self.name,
+            'product_uom_qty': self.quantity,
+            'price_unit': self.unit_price,
+        }
+
+    def _compute_discount_pct(self):
+        """Calculate discount percentage."""
+        self.ensure_one()
+        if self.subtotal and self.discount_amount:
+            return (self.discount_amount / self.subtotal) * 100
+        return 0.0
 # ProductCategoryMapping and PriceRecommendation moved to:
 # - models/category_mapping.py
 # - models/price_recommendation.py
