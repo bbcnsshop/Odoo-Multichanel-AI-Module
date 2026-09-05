@@ -4,206 +4,29 @@
         <field name="name">channel.product.attribute.tree</field>
         <field name="model">channel.product.attribute</field>
         <field name="arch" type="xml">
-            <tree editable="bottom" create="true">
-                <field name="active" widget="boolean_toggle"/>
-                <field name="channel_id" options="{&apos;no_create&apos;: True}"/>
-                <field name="channel_product_id" optional="hide" options="{&apos;no_create&apos;: True}"/>
-                <field name="sequence" widget="handle"/>
+            <tree>
+                <field name="display_name"/>
+                <field name="channel_id"/>
                 <field name="odoo_attribute_id"/>
-                <field name="odoo_value_id"/>
-                <field name="platform_attr_name"/>
-                <field name="platform_attr_value"/>
-                <field name="is_mandatory" widget="boolean_toggle"/>
-                <field name="is_custom" widget="boolean_toggle"/>
             </tree>
         </field>
     </record>
-
     <record id="view_channel_product_attribute_form" model="ir.ui.view">
         <field name="name">channel.product.attribute.form</field>
         <field name="model">channel.product.attribute</field>
         <field name="arch" type="xml">
-            <form>
-                <sheet>
-                    <group>
-                        <group string="Channel">
-                            <field name="channel_id" options="{&apos;no_create&apos;: True}"/>
-                            <field name="channel_product_id" options="{&apos;no_create&apos;: True}"/>
-                            <field name="active"/>
-                        </group>
-                        <group string="Odoo Source">
-                            <field name="odoo_attribute_id"/>
-                            <field name="odoo_value_id"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group string="Platform Mapping">
-                            <field name="platform_attr_name"/>
-                            <field name="platform_attr_value"/>
-                        </group>
-                        <group string="Options">
-                            <field name="sequence"/>
-                            <field name="is_mandatory"/>
-                            <field name="is_custom"/>
-                        </group>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
-    <record id="view_channel_product_attribute_search" model="ir.ui.view">
-        <field name="name">channel.product.attribute.search</field>
-        <field name="model">channel.product.attribute</field>
-        <field name="arch" type="xml">
-            <search>
+            <form><sheet><group>
                 <field name="channel_id"/>
                 <field name="odoo_attribute_id"/>
+                <field name="odoo_value_id"/>
                 <field name="platform_attr_name"/>
-                <separator/>
-                <filter name="mandatory" string="Mandatory" domain="[(&apos;is_mandatory&apos;, &apos;=&apos;, True)]"/>
-                <group expand="0" string="Group By">
-                    <filter name="by_channel" string="By Channel" context="{&apos;group_by&apos;: &apos;channel_id&apos;}"/>
-                    <filter name="by_attribute" string="By Attribute" context="{&apos;group_by&apos;: &apos;odoo_attribute_id&apos;}"/>
-                </group>
-            </search>
+                <field name="platform_attr_value"/>
+            </group></sheet></form>
         </field>
     </record>
-
     <record id="action_channel_product_attribute" model="ir.actions.act_window">
-        <field name="name">Attribute Mappings</field>
+        <field name="name">Product Attributes</field>
         <field name="res_model">channel.product.attribute</field>
         <field name="view_mode">tree,form</field>
     </record>
-
-    <record id="view_channel_product_variant_tree" model="ir.ui.view">
-        <field name="name">channel.product.variant.tree</field>
-        <field name="model">channel.product.variant</field>
-        <field name="arch" type="xml">
-            <tree editable="bottom" create="true" decoration-danger="sync_status == &apos;error&apos;" decoration-success="sync_status == &apos;synced&apos;">
-                <field name="product_variant_id" options="{&apos;no_create&apos;: True}"/>
-                <field name="variant_sku" readonly="1"/>
-                <field name="channel_price"/>
-                <field name="channel_qty"/>
-                <field name="channel_weight"/>
-                <field name="platform_variant_id" readonly="1"/>
-                <field name="sync_status" widget="badge"
-                       decoration-success="sync_status == &apos;synced&apos;"
-                       decoration-danger="sync_status == &apos;error&apos;"
-                       decoration-warning="sync_status == &apos;pending&apos;"/>
-                <button name="action_create_on_platform" string="Create" type="object" icon="fa-plus" title="Create on Platform"
-                        attrs="{'invisible': [('sync_status', '=', 'synced')]}"/>
-                <button name="action_sync_to_platform" string="Sync" type="object" icon="fa-refresh" title="Sync to Platform"/>
-                <button name="action_update_on_platform" string="Update" type="object" icon="fa-upload" title="Update on Platform"
-                        attrs="{'invisible': [('platform_variant_id', '=', False)]}"/>
-                <button name="action_retry_sync" string="Retry" type="object" icon="fa-repeat" title="Retry Failed Sync"
-                        attrs="{'invisible': [('sync_status', '!=', 'error')]}"/>
-                <button name="action_delete_from_platform" string="Delete" type="object" icon="fa-trash" title="Delete from Platform"
-                        attrs="{'invisible': [('platform_variant_id', '=', False)]}"/>
-                <button name="action_view_on_platform" string="View" type="object" icon="fa-external-link" title="View on Platform"
-                        attrs="{'invisible': [('platform_variant_url', '=', False)]}"/>
-            </tree>
-        </field>
-    </record>
-
-    <record id="view_channel_product_variant_form" model="ir.ui.view">
-        <field name="name">channel.product.variant.form</field>
-        <field name="model">channel.product.variant</field>
-        <field name="arch" type="xml">
-            <form>
-                <header>
-                    <button name="action_create_on_platform" string="Create on Platform" type="object" class="btn-primary" icon="fa-plus"
-                            attrs="{'invisible': [('sync_status', '=', 'synced')]}"/>
-                    <button name="action_update_on_platform" string="Update on Platform" type="object" class="btn-secondary" icon="fa-upload"
-                            attrs="{'invisible': [('sync_status', '!=', 'synced')]}"/>
-                    <button name="action_sync_to_platform" string="Sync" type="object" class="btn-secondary" icon="fa-refresh"/>
-                    <button name="action_retry_sync" string="Retry" type="object" class="btn-warning" icon="fa-repeat"
-                            attrs="{'invisible': [('sync_status', '!=', 'error')]}"/>
-                    <button name="action_delete_from_platform" string="Delete from Platform" type="object" class="btn-danger" icon="fa-trash"
-                            attrs="{'invisible': [('platform_variant_id', '=', False)]}"
-                            confirm="Are you sure you want to delete this variant from the platform?"/>
-                    <button name="action_view_on_platform" string="View on Platform" type="object" class="btn-link" icon="fa-external-link"
-                            attrs="{'invisible': [('platform_variant_url', '=', False)]}"/>
-                    <field name="sync_status" widget="statusbar" statusbar_visible="pending,synced,error"/>
-                </header>
-                <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="action_view_on_platform" type="object" class="oe_stat_button" icon="fa-external-link"
-                                attrs="{'invisible': [('platform_variant_url', '=', False)]}">
-                            <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_text">View on</span>
-                                <span class="o_stat_text">Platform</span>
-                            </div>
-                        </button>
-                    </div>
-                    <group>
-                        <group string="Mapping">
-                            <field name="channel_product_id" options="{&apos;no_create&apos;: True}"/>
-                            <field name="product_variant_id"/>
-                            <field name="variant_sku" readonly="1"/>
-                        </group>
-                        <group string="Pricing &amp; Stock">
-                            <field name="channel_price"/>
-                            <field name="channel_qty"/>
-                            <field name="channel_weight"/>
-                        </group>
-                    </group>
-                    <group string="Platform Info">
-                        <field name="platform_variant_id" readonly="1"/>
-                        <field name="platform_variant_url" readonly="1"/>
-                    </group>
-                </sheet>
-                <div class="oe_chatter">
-                    <field name="message_follower_ids" groups="base.group_user"/>
-                    <field name="message_ids"/>
-                </div>
-            </form>
-        </field>
-    </record>
-
-    <record id="action_channel_product_variant" model="ir.actions.act_window">
-        <field name="name">Channel Variants</field>
-        <field name="res_model">channel.product.variant</field>
-        <field name="view_mode">tree,form</field>
-    </record>
-
-    <record id="view_attribute_wizard_form" model="ir.ui.view">
-        <field name="name">channel.product.attribute.wizard.form</field>
-        <field name="model">channel.product.attribute.wizard</field>
-        <field name="arch" type="xml">
-            <form string="Auto-generate Attribute Mappings">
-                <group>
-                    <group string="Source">
-                        <field name="channel_product_id" options="{&apos;no_create&apos;: True}"/>
-                    </group>
-                    <group string="Platform Naming">
-                        <field name="use_default_name"/>
-                        <field name="override_platform_name"
-                               attrs="{&apos;invisible&apos;: [(&apos;use_default_name&apos;, &apos;=&apos;, True)]}"/>
-                    </group>
-                </group>
-                <separator string="What will happen?"/>
-                <div class="alert alert-info" role="alert">
-                    <p>All Odoo attribute values on this product will be created as platform mappings.</p>
-                    <p>For example: Color/Red -> Color/Red (or your custom name).</p>
-                    <p>Existing mappings for this product will be deleted and recreated.</p>
-                </div>
-                <footer>
-                    <button name="action_generate" string="Generate Mappings" type="object" class="btn-primary"/>
-                    <button string="Cancel" class="btn-secondary" special="cancel"/>
-                </footer>
-            </form>
-        </field>
-    </record>
-
-    <record id="action_attribute_wizard" model="ir.actions.act_window">
-        <field name="name">Auto-generate Attribute Mappings</field>
-        <field name="res_model">channel.product.attribute.wizard</field>
-        <field name="view_mode">form</field>
-        <field name="target">new</field>
-    </record>
-
-    <!-- MENUS -->
-    <menuitem id="menu_channel_product_variants" name="Channel Variants" action="action_channel_product_variant" parent="menu_multichannel_root" sequence="40"/>
-    <menuitem id="menu_channel_product_attributes" name="Attribute Mappings" action="action_channel_product_attribute" parent="menu_multichannel_root" sequence="41"/>
 </odoo>

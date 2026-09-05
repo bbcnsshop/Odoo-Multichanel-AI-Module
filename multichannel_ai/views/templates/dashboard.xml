@@ -1,65 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Dashboard Template -->
-    <template id="dashboard_template" name="Multi-Channel Dashboard">
-        <t t-call="multichannel_ai.frontend_layout">
-            <div class="mc-content">
-                <div class="mc-header">
-                    <h1><i class="fa fa-dashboard"/> Dashboard</h1>
-                    <p class="text-muted">ภาพรวมการขายข้ามช่องทางออนไลน์</p>
-                </div>
-
-                <!-- Summary Cards -->
-                <div class="mc-cards">
-                    <t t-foreach="summary_data" t-as="ch">
-                        <div class="mc-card"
-                             t-attf-style="border-top: 4px solid #{
-                                 'ee4d2d' if ch['channel'].code == 'shopee'
-                                 else '0f146d' if ch['channel'].code == 'lazada'
-                                 else '000000' if ch['channel'].code == 'tiktok'
-                                 else '666666'}">
-                            <div class="mc-card-icon">
-                                <t t-if="ch['channel'].code == 'shopee'"><i class="fa fa-shopping-bag" style="color:#ee4d2d"/></t>
-                                <t t-elif="ch['channel'].code == 'lazada'"><i class="fa fa-shopping-cart" style="color:#0f146d"/></t>
-                                <t t-elif="ch['channel'].code == 'tiktok'"><i class="fa fa-play-circle" style="color:#000000"/></t>
-                                <t t-else=""><i class="fa fa-plug"/></t>
-                            </div>
-                            <div class="mc-card-content">
-                                <h3 t-esc="ch['channel'].name"/>
-                                <div class="mc-card-stats">
-                                    <div>
-                                        <strong t-esc="ch['product_count']"/>
-                                        <small> Products</small>
-                                    </div>
-                                    <div>
-                                        <strong t-esc="ch['order_count']"/>
-                                        <small> Orders</small>
-                                    </div>
-                                    <div t-if="ch['pending_order']">
-                                        <strong t-esc="ch['pending_order']" style="color:#e67e22"/>
-                                        <small> Pending</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </t>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="mc-section">
-                    <h2><i class="fa fa-bolt"/> Quick Actions</h2>
-                    <div class="mc-actions">
-                        <a href="/multichannel/products" class="mc-action-btn">
-                            <i class="fa fa-plus"/> Add Product to Channel
-                        </a>
-                        <a href="/multichannel/sync" class="mc-action-btn">
-                            <i class="fa fa-refresh"/> Sync All Channels
-                        </a>
-                        <a href="/multichannel/orders" class="mc-action-btn">
-                            <i class="fa fa-list"/> View Orders
-                        </a>
-                    </div>
-                </div>
+    <template id="multichannel_dashboard" name="Multichannel Dashboard">
+        <t t-call="multichannel_ai.multichannel_layout">
+            <div class="o_portal_content">
+                <h1>Multi-Channel Dashboard</h1>
+                <p>Welcome to Multi-Channel E-Commerce</p>
             </div>
         </t>
     </template>

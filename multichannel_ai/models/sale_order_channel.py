@@ -40,7 +40,7 @@ class SaleOrder(models.Model):
         compute='_compute_is_from_channel',
         store=True
     )
-    channel_order_state = fields.Char(
+    channel_order_state = fields.Selection(
         string='Channel Order State',
         related='channel_order_id.state',
         readonly=True

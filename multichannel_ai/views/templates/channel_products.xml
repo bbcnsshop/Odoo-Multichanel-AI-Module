@@ -1,83 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Channel Products List Page -->
-    <template id="channel_products_template" name="Channel Products">
-        <t t-call="multichannel_ai.frontend_layout">
-            <div class="mc-content">
-                <div class="mc-header">
-                    <h1><i class="fa fa-cube"/> Channel Products</h1>
-                    <p class="text-muted">จัดการสินค้าข้ามช่องทางออนไลน์</p>
-                </div>
-                <!-- Filters -->
-                <div class="mc-filters">
-                    <form method="get" action="/multichannel/products">
-                        <div class="mc-filter-row">
-                            <select name="channel" class="mc-select">
-                                <option value="">All Channels</option>
-                                <t t-foreach="channels" t-as="ch">
-                                    <option t-attf-value="{{ ch.id }}"
-                                            t-att-selected="str(channel_id) == str(ch.id)">
-                                        <t t-esc="ch.name"/>
-                                    </option>
-                                </t>
-                            </select>
-                            <select name="state" class="mc-select">
-                                <option value="">All Status</option>
-                                <option value="active" t-att-selected="state=='active'">Active</option>
-                                <option value="draft" t-att-selected="state=='draft'">Draft</option>
-                                <option value="inactive" t-att-selected="state=='inactive'">Inactive</option>
-                            </select>
-                            <input type="text" name="search" class="mc-input"
-                                   placeholder="Search..."
-                                   t-attf-value="{{ search or '' }}"/>
-                            <button type="submit" class="mc-btn mc-btn-primary">
-                                <i class="fa fa-search"/> Filter
-                            </button>
-                            <a href="/multichannel/products" class="mc-btn mc-btn-secondary">
-                                <i class="fa fa-times"/> Clear
-                            </a>
-                        </div>
-                    </form>
-                </div>
-                <!-- Products Table -->
-                <div class="mc-table-wrapper">
-                    <table class="mc-table">
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Channel</th>
-                                <th>Price</th>
-                                <th>Stock</th>
-                                <th>Status</th>
-                                <th>Sync</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <t t-foreach="products" t-as="p">
-                                <tr>
-                                    <td>
-                                        <strong t-esc="p.product_id.name"/>
-                                    </td>
-                                    <td t-esc="p.channel_id.name"/>
-                                    <td t-esc="p.channel_price"/>
-                                    <td t-esc="p.channel_qty"/>
-                                    <td t-esc="p.state"/>
-                                    <td t-esc="p.sync_status"/>
-                                    <td>
-                                        <a t-attf-href="/multichannel/products/{{ p.id }}"
-                                           class="mc-btn mc-btn-sm">Edit</a>
-                                    </td>
-                                </tr>
-                            </t>
-                            <t t-if="not products">
-                                <tr>
-                                    <td colspan="7" class="text-center">No products found</td>
-                                </tr>
-                            </t>
-                        </tbody>
-                    </table>
-                </div>
+    <template id="multichannel_products" name="Channel Products">
+        <t t-call="multichannel_ai.multichannel_layout">
+            <div class="o_portal_content">
+                <h1>Channel Products</h1>
             </div>
         </t>
     </template>

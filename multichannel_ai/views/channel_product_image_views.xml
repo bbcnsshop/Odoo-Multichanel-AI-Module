@@ -4,30 +4,17 @@
         <field name="name">channel.product.image.tree</field>
         <field name="model">channel.product.image</field>
         <field name="arch" type="xml">
-            <tree editable="bottom" create="true">
-                <field name="sequence" widget="handle"/>
-                <field name="is_primary" widget="boolean_toggle"/>
-                <field name="source_type"/>
-                <field name="image_type" widget="badge"/>
+            <tree>
+                <field name="channel_product_id"/>
+                <field name="sequence"/>
+                <field name="is_primary"/>
+                <field name="image_type"/>
                 <field name="alt_text"/>
-                <field name="image_url"/>
-                <field name="upload_status" widget="badge"
-                       decoration-success="upload_status == 'uploaded'"
-                       decoration-warning="upload_status == 'pending'"
-                       decoration-danger="upload_status == 'error'"/>
-                <field name="image_id_on_platform" readonly="1" optional="hide"/>
-                <field name="platform_image_url" readonly="1" optional="hide"/>
-                <field name="last_upload" optional="hide"/>
-                <button name="action_upload" string="Upload" type="object"
-                        icon="fa-upload"
-                        attrs="{'invisible': [('upload_status', '=', 'uploaded')]}"/>
-                <button name="action_retry_upload" string="Retry" type="object"
-                        icon="fa-refresh"
-                        attrs="{'invisible': [('upload_status', '!=', 'error')]}"/>
+                <field name="source_type"/>
+                <field name="upload_status"/>
             </tree>
         </field>
     </record>
-
     <record id="view_channel_product_image_form" model="ir.ui.view">
         <field name="name">channel.product.image.form</field>
         <field name="model">channel.product.image</field>
@@ -35,86 +22,45 @@
             <form>
                 <sheet>
                     <group>
-                        <group string="Source">
-                            <field name="channel_product_id" options="{'no_create': True}"/>
+                        <group string="Product">
+                            <field name="channel_product_id"/>
                             <field name="sequence"/>
                             <field name="is_primary"/>
                         </group>
                         <group string="Image Source">
                             <field name="source_type"/>
-                            <field name="odoo_image_field"
-                                   attrs="{'invisible': [('source_type', 'not in', ('product', 'variant'))]}"/>
-                            <field name="image_url"
-                                   attrs="{'required': [('source_type', '=', 'url')]}"/>
+                            <field name="odoo_image_field"/>
+                            <field name="image_url"/>
                         </group>
                     </group>
-                    <group string="SEO &amp; Type">
-                        <group>
-                            <field name="alt_text"/>
+                    <group>
+                        <group string="Image Details">
                             <field name="image_type"/>
+                            <field name="alt_text"/>
                         </group>
-                        <group>
-                            <button name="action_regenerate_alt_text" string="Regenerate Alt Text"
-                                    type="object" class="btn-secondary" icon="fa-refresh"/>
+                        <group string="Upload Status">
+                            <field name="upload_status"/>
+                            <field name="upload_message"/>
+                            <field name="last_upload"/>
                         </group>
                     </group>
-                    <group string="Upload Status">
-                        <group>
-                            <field name="upload_status" widget="badge"/>
-                            <field name="image_id_on_platform" readonly="1"/>
-                            <field name="platform_image_url" readonly="1"/>
-                            <field name="upload_message" readonly="1"/>
-                            <field name="last_upload" readonly="1"/>
+                    <group>
+                        <group string="Platform Image IDs">
+                            <field name="shopee_image_id"/>
+                            <field name="lazada_image_id"/>
+                            <field name="tiktok_image_id"/>
                         </group>
-                        <group>
+                        <group string="Metadata">
                             <field name="width"/>
                             <field name="height"/>
                             <field name="file_size"/>
-                            <field name="checksum" readonly="1"/>
+                            <field name="checksum"/>
                         </group>
                     </group>
-                    <group string="Platform IDs">
-                        <group>
-                            <field name="shopee_image_id" readonly="1"/>
-                            <field name="lazada_image_id" readonly="1"/>
-                            <field name="tiktok_image_id" readonly="1"/>
-                        </group>
-                    </group>
-                    <footer>
-                        <button name="action_upload" string="Upload to Platform" type="object" class="btn-primary"/>
-                        <button name="action_retry_upload" string="Retry Upload" type="object" class="btn-secondary"
-                                attrs="{'invisible': [('upload_status', '!=', 'error')]}"/>
-                    </footer>
                 </sheet>
             </form>
         </field>
     </record>
-
-    <record id="view_channel_product_image_search" model="ir.ui.view">
-        <field name="name">channel.product.image.search</field>
-        <field name="model">channel.product.image</field>
-        <field name="arch" type="xml">
-            <search>
-                <field name="channel_product_id"/>
-                <field name="channel_id"/>
-                <field name="alt_text"/>
-                <separator/>
-                <filter name="pending" string="Pending" domain="[('upload_status', '=', 'pending')]"/>
-                <filter name="uploaded" string="Uploaded" domain="[('upload_status', '=', 'uploaded')]"/>
-                <filter name="error" string="Error" domain="[('upload_status', '=', 'error')]"/>
-                <separator/>
-                <filter name="main" string="Main Images" domain="[('image_type', '=', 'main')]"/>
-                <filter name="gallery" string="Gallery" domain="[('image_type', '=', 'gallery')]"/>
-                <separator/>
-                <group expand="0" string="Group By">
-                    <filter name="by_channel" string="By Channel" context="{'group_by': 'channel_id'}"/>
-                    <filter name="by_upload_status" string="By Status" context="{'group_by': 'upload_status'}"/>
-                    <filter name="by_image_type" string="By Image Type" context="{'group_by': 'image_type'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
-
     <record id="action_channel_product_image" model="ir.actions.act_window">
         <field name="name">Channel Product Images</field>
         <field name="res_model">channel.product.image</field>

@@ -1,128 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
-        <!-- =========================================================
-             BACKEND MENUS (Admin/Manager only)
-             ========================================================= -->
-        <menuitem id="menu_online_sales_root"
-                  name="Online Sales"
-                  sequence="50"
-                  groups="multichannel_ai.group_multichannel_manager"/>
-
-        <menuitem id="menu_manage_channels"
-                  name="Manage Channels"
-                  parent="menu_online_sales_root"
-                  action="action_channel_config"
-                  sequence="5"
-                  groups="multichannel_ai.group_multichannel_manager"/>
-
-        <menuitem id="menu_channel_list_module"
-                  name="Channel List Modules"
-                  parent="menu_online_sales_root"
-                  action="action_channel_list_module"
-                  sequence="3"
-                  groups="multichannel_ai.group_multichannel_manager"/>
-        <menuitem id="menu_manage_channels"
-                  name="Manage Channels"
-                  parent="menu_online_sales_root"
-                  action="action_channel_config"
-                  sequence="5"
-                  groups="multichannel_ai.group_multichannel_manager"/>
-
-        <menuitem id="menu_channel_products"
-                  name="Channel Products"
-                  parent="menu_online_sales_root"
-                  action="action_channel_product"
-                  sequence="10"
-                  groups="multichannel_ai.group_multichannel_manager"/>
-
-        <menuitem id="menu_add_to_channel"
-                  name="Add Products to Channel"
-                  parent="menu_online_sales_root"
-                  action="action_add_to_channel_bulk_wizard"
-                  sequence="15"
-                  groups="multichannel_ai.group_multichannel_manager"/>
-
-        <menuitem id="menu_channel_images"
-                  name="Channel Images"
-                  parent="menu_online_sales_root"
-                  action="action_channel_product_image"
-                  sequence="18"
-                  groups="multichannel_ai.group_multichannel_manager"/>
-        <menuitem id="menu_channel_attributes"
-                  name="Attribute Mappings"
-                  parent="menu_online_sales_root"
-                  action="action_channel_product_attribute"
-                  sequence="19"
-                  groups="multichannel_ai.group_multichannel_manager"/>
-
-        <menuitem id="menu_field_mappings"
-                  name="Field Mappings"
-                  parent="menu_online_sales_root"
-                  action="action_channel_field_mapping"
-                  sequence="20"
-                  groups="multichannel_ai.group_multichannel_manager"/>
-
-        <menuitem id="menu_category_mapping"
-                  name="Category Mappings"
-                  parent="menu_online_sales_root"
-                  action="action_category_mapping"
-                  sequence="25"
-                  groups="multichannel_ai.group_multichannel_manager"/>
-
-        <menuitem id="menu_price_recommendation"
-                  name="Price Recommendations"
-                  parent="menu_online_sales_root"
-                  action="action_price_recommendation"
-                  sequence="30"
-                  groups="multichannel_ai.group_multichannel_manager"/>
-
-        <!-- =========================================================
-             FRONTEND WEB MENUS (Both User and Manager)
-             ========================================================= -->
-        <menuitem id="menu_mc_frontend_root"
-                  name="🛍 Multi-Channel"
-                  sequence="15"
-                  groups="multichannel_ai.group_multichannel_user"/>
-
-        <menuitem id="menu_mc_dashboard"
-                  name="📊 Dashboard"
-                  parent="menu_mc_frontend_root"
-                  action="action_mc_dashboard"
-                  sequence="1"
-                  groups="multichannel_ai.group_multichannel_user"/>
-
-        <menuitem id="menu_mc_products"
-                  name="📦 Channel Products (Web)"
-                  parent="menu_mc_frontend_root"
-                  action="action_mc_products"
-                  sequence="5"
-                  groups="multichannel_ai.group_multichannel_user"/>
-
-        <menuitem id="menu_mc_sync"
-                  name="🔄 Sync Manager"
-                  parent="menu_mc_frontend_root"
-                  action="action_mc_sync"
-                  sequence="10"
-                  groups="multichannel_ai.group_multichannel_manager"/>
-
-        <menuitem id="menu_mc_channels"
-                  name="🔌 Channels"
-                  parent="menu_mc_frontend_root"
-                  action="action_mc_channels"
-                  sequence="15"
-                  groups="multichannel_ai.group_multichannel_user"/>
-
-        <menuitem id="menu_mc_orders"
-                  name="🛒 Orders"
-                  parent="menu_mc_frontend_root"
-                  action="action_mc_orders"
-                  sequence="20"
-                  groups="multichannel_ai.group_multichannel_user"/>
-
-        <!-- =========================================================
-             Frontend Actions (Open URLs)
-             ========================================================= -->
+    <data noupdate="1">
+        <!-- Frontend Actions (define first before menuitems reference them) -->
         <record id="action_mc_dashboard" model="ir.actions.act_url">
             <field name="name">Multi-Channel Dashboard</field>
             <field name="url">/multichannel/dashboard</field>
@@ -152,5 +31,117 @@
             <field name="url">/multichannel/orders</field>
             <field name="target">self</field>
         </record>
+    </data>
+    <data>
+        <!-- Root menu under Sales -->
+        <menuitem id="menu_online_sales_root"
+                  name="Online Sales"
+                  parent="sale.sale_menu_root"
+                  sequence="50"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
+        <menuitem id="menu_manage_channels"
+                  name="Manage Channels"
+                  parent="menu_online_sales_root"
+                  action="action_channel_config"
+                  sequence="5"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
+        <menuitem id="menu_channel_list_module"
+                  name="Channel List Modules"
+                  parent="menu_online_sales_root"
+                  action="action_channel_list_module"
+                  sequence="3"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
+        <menuitem id="menu_channel_products"
+                  name="Channel Products"
+                  parent="menu_online_sales_root"
+                  action="action_channel_product"
+                  sequence="10"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
+        <menuitem id="menu_add_to_channel"
+                  name="Add Products to Channel"
+                  parent="menu_online_sales_root"
+                  action="action_add_to_channel_bulk_wizard"
+                  sequence="15"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
+        <menuitem id="menu_channel_images"
+                  name="Channel Images"
+                  parent="menu_online_sales_root"
+                  action="action_channel_product_image"
+                  sequence="18"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
+        <menuitem id="menu_channel_attributes"
+                  name="Attribute Mappings"
+                  parent="menu_online_sales_root"
+                  action="action_channel_product_attribute"
+                  sequence="19"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
+        <menuitem id="menu_field_mappings"
+                  name="Field Mappings"
+                  parent="menu_online_sales_root"
+                  action="action_channel_field_mapping"
+                  sequence="20"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
+        <menuitem id="menu_category_mapping"
+                  name="Category Mappings"
+                  parent="menu_online_sales_root"
+                  action="action_category_mapping"
+                  sequence="25"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
+        <menuitem id="menu_price_recommendation"
+                  name="Price Recommendations"
+                  parent="menu_online_sales_root"
+                  action="action_price_recommendation"
+                  sequence="30"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
+        <!-- Frontend web menus - separate root -->
+        <menuitem id="menu_mc_frontend_root"
+                  name="Multi-Channel"
+                  sequence="100"
+                  groups="multichannel_ai.group_multichannel_user"/>
+
+        <menuitem id="menu_mc_dashboard"
+                  name="Dashboard"
+                  parent="menu_mc_frontend_root"
+                  action="action_mc_dashboard"
+                  sequence="1"
+                  groups="multichannel_ai.group_multichannel_user"/>
+
+        <menuitem id="menu_mc_products"
+                  name="Channel Products"
+                  parent="menu_mc_frontend_root"
+                  action="action_mc_products"
+                  sequence="5"
+                  groups="multichannel_ai.group_multichannel_user"/>
+
+        <menuitem id="menu_mc_sync"
+                  name="Sync Manager"
+                  parent="menu_mc_frontend_root"
+                  action="action_mc_sync"
+                  sequence="10"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
+        <menuitem id="menu_mc_channels"
+                  name="Channels"
+                  parent="menu_mc_frontend_root"
+                  action="action_mc_channels"
+                  sequence="15"
+                  groups="multichannel_ai.group_multichannel_user"/>
+
+        <menuitem id="menu_mc_orders"
+                  name="Orders"
+                  parent="menu_mc_frontend_root"
+                  action="action_mc_orders"
+                  sequence="20"
+                  groups="multichannel_ai.group_multichannel_user"/>
     </data>
 </odoo>

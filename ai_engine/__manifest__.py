@@ -28,7 +28,6 @@ All calculations include Thai VAT 7%.
     'depends': [
         'base',
         'product',
-        'requests',
     ],
     'data': [
         'security/ir.model.access.csv',

@@ -1,275 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Tree View -->
     <record id="view_channel_product_tree" model="ir.ui.view">
         <field name="name">channel.product.tree</field>
         <field name="model">channel.product</field>
         <field name="arch" type="xml">
-            <tree multi_edit="1" delete="false"
-                  decoration-danger="sync_status == 'error'"
-                  decoration-warning="state == 'draft' or has_missing_required">
-                <field name="product_id" optional="show"/>
-                <field name="product_category" optional="show"/>
-                <field name="channel_id" optional="show" widget="badge"/>
-                <field name="channel_price" optional="show" decoration-bf="1"/>
-                <field name="channel_qty" optional="show"/>
-                <field name="completeness_pct" optional="show"
-                       widget="progressbar"
-                       decoration-success="completeness_pct >= 100"
-                       decoration-danger="completeness_pct &lt; 50"
-                       decoration-warning="50 &lt;= completeness_pct &lt; 100"/>
-                <field name="has_missing_required" invisible="1"/>
-                <field name="state" widget="badge" decoration-success="state == 'active'" decoration-warning="state == 'draft'"/>
-                <field name="sync_status" widget="badge" optional="show"
-                       decoration-success="sync_status == 'synced'"
-                       decoration-danger="sync_status == 'error'"
-                       decoration-info="sync_status == 'never'"/>
-                <field name="last_sync" optional="hide"/>
+            <tree>
+                <field name="name"/>
+                <field name="channel_id"/>
+                <field name="product_id"/>
+                <field name="channel_price"/>
+                <field name="channel_qty"/>
+                <field name="state"/>
             </tree>
         </field>
     </record>
 
-
-    <!-- Form View - All-in-One -->
     <record id="view_channel_product_form" model="ir.ui.view">
         <field name="name">channel.product.form</field>
         <field name="model">channel.product</field>
         <field name="arch" type="xml">
             <form>
                 <sheet>
-                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
-                    <div class="oe_button_box" name="button_box">
-                        <button class="oe_stat_button" name="action_view_images" type="object" icon="fa-picture-o">
-                            <field name="image_count" widget="statinfo" string="Images"/>
-                        </button>
-                        <button class="oe_stat_button" name="action_view_videos" type="object" icon="fa-video-camera">
-                            <field name="video_count" widget="statinfo" string="Videos"/>
-<button name="action_upload_image" type="object" class="oe_stat_button" icon="fa-upload" context="{'default_channel_product_id': self.id}">
-                        <div class="o_field_widget o_stat_info">
-                            <span class="o_stat_text">Upload Image</span>
-                        </div>
-                    </button>
-                        </button>
-                        <button class="oe_stat_button" name="action_check_completeness" type="object" icon="fa-check-circle-o">
-                            <field name="completeness_pct" widget="statinfo" string="Complete"/>
-                        </button>
-                    </div>
                     <group>
-                        <group string="Product Info">
-                            <field name="product_id" options='{"no_create": true}'/>
-                            <field name="channel_id" options='{"no_create": true}'/>
-                            <field name="product_category" readonly="1"/>
-                            <field name="state" widget="badge"/>
-                            <field name="sync_status" widget="badge"/>
-                        </group>
-                        <group string="Pricing">
+                        <group>
+                            <field name="name"/>
+                            <field name="channel_id"/>
+                            <field name="product_id"/>
                             <field name="channel_price"/>
-                            <field name="ai_recommended_price" readonly="1"/>
-                            <field name="product_cost" readonly="1"/>
+                            <field name="channel_qty"/>
+                            <field name="state"/>
                         </group>
                     </group>
-                    <notebook colspan="4">
-                        <!-- TAB 1: All Data + Media in One Page -->
-                        <page string="ข้อมูล &amp; สื่อ" name="all_data">
-                            <group string="ข้อมูลบังคับ Platform">
-                                <group>
-                                    <field name="barcode"/>
-                                    <field name="condition" widget="selection"/>
-                                    <field name="channel_brand"/>
-                                </group>
-                                <group>
-                                    <field name="channel_weight" string="น้ำหนัก (kg)"/>
-                                    <field name="channel_length" string="ยาว (cm)"/>
-                                    <field name="channel_width" string="กว้าง (cm)"/>
-                                    <field name="channel_height" string="สูง (cm)"/>
-                                </group>
-                            </group>
-                            <group string="คำอธิบาย">
-                                <field name="channel_description" nolabel="1"/>
-                            </group>
-                            <group string="Video URL">
-                                <field name="channel_video_url"/>
-                            </group>
-
-                            <!-- Images Section -->
-                            <separator string="รูปภาพ (Images)"/>
-                            <div class="mb-2">
-                                <button name="%(multichannel_ai.action_channel_product_image_upload)d" type="action" class="btn-primary btn-sm" context="{'default_channel_product_id': id}">
-                                    <i class="fa fa-plus"/> เพิ่มรูปภาพ
-                                </button>
-                                <span class="text-muted ms-2">ลากเรียงลำดับ รูปแรก = รูปหลัก</span>
-                            </div>
-                            <field name="image_ids" context="{'default_channel_product_id': id}" mode="kanban" nolabel="1">
-                                <kanban default_order="sequence">
-                                    <field name="id"/>
-                                    <field name="sequence"/>
-                                    <field name="image_url"/>
-                                    <field name="image_type"/>
-                                    <field name="upload_status"/>
-                                    <templates>
-                                        <t t-name="kanban-box">
-                                            <div class="oe_kanban_global_click">
-                                                <div class="o_kanban_image" style="height:90px;overflow:hidden;">
-                                                    <t t-if="record.image_url.raw_value">
-                                                        <img t-att-src="record.image_url.raw_value" style="width:100%;height:100%;object-fit:cover;"/>
-                                                    </t>
-                                                    <t t-else="">
-                                                        <div class="bg-secondary d-flex align-items-center justify-content-center" style="height:90px;">
-                                                            <i class="fa fa-picture-o fa-2x text-white"/>
-                                                        </div>
-                                                    </t>
-                                                </div>
-                                                <div class="oe_kanban_details p-1">
-                                                    <small class="text-truncate d-block"><field name="sequence"/>: <field name="image_type"/></small>
-                                                </div>
-                                            </div>
-                                        </t>
-                                    </templates>
-                                </kanban>
-                            </field>
-
-                            <!-- Videos Section -->
-                            <separator string="วิดีโอ (Videos)"/>
-                            <div class="mb-2">
-                                <button name="%(multichannel_ai.action_channel_product_video)d" type="action" class="btn-danger btn-sm" context="{'default_channel_product_id': id}">
-                                    <i class="fa fa-plus"/> เพิ่มวิดีโอ
-                                </button>
-                                <span class="text-muted ms-2">สำหรับ TikTok, Shopee</span>
-                            </div>
-                            <field name="video_ids" context="{'default_channel_product_id': id}" mode="kanban" nolabel="1">
-                                <kanban default_order="sequence">
-                                    <field name="id"/>
-                                    <field name="name"/>
-                                    <field name="video_type"/>
-                                    <field name="duration_display"/>
-                                    <field name="state"/>
-                                    <templates>
-                                        <t t-name="kanban-box">
-                                            <div class="oe_kanban_global_click">
-                                                <div class="bg-danger d-flex align-items-center justify-content-center" style="height:90px;">
-                                                    <i class="fa fa-play-circle-o fa-3x text-white"/>
-                                                </div>
-                                                <div class="oe_kanban_details p-1">
-                                                    <small class="text-truncate d-block"><field name="name"/></small>
-                                                    <small class="text-muted"><field name="video_type"/> | <field name="duration_display"/></small>
-                                                </div>
-                                            </div>
-                                        </t>
-                                    </templates>
-                                </kanban>
-                            </field>
-                        </page>
-
-                        <!-- TAB 2: Variants & Attributes -->
-                        <page string="Variants &amp; Attributes" name="variants">
-                            <div class="alert alert-info"><i class="fa fa-info-circle"/> Variants จะถูกสร้างอัตโนมัติเมื่อ Sync</div>
-                            <field name="variant_ids" context="{'default_channel_product_id': id}">
-                                <tree editable="bottom">
-                                    <field name="product_variant_id" options="{'no_create': True}"/>
-                                    <field name="variant_sku" readonly="1"/>
-                                    <field name="channel_price"/>
-                                    <field name="channel_qty"/>
-                                    <field name="channel_weight"/>
-                                    <field name="platform_variant_id" readonly="1"/>
-                                    <field name="sync_status" widget="badge"/>
-                                    <button name="action_sync_variant" string="Sync" type="object" icon="fa-refresh"/>
-                                </tree>
-                            </field>
-                            <separator string="Attribute Mappings" class="mt-4"/>
-                            <button name="%(action_attribute_wizard)d" string="Auto-generate" type="action" class="btn-primary btn-sm mb-2" context="{'default_channel_product_id': id}"/>
-                            <field name="attribute_mapping_ids" context="{'default_channel_id': channel_id, 'default_channel_product_id': id}">
-                                <tree editable="bottom">
-                                    <field name="active" widget="boolean_toggle"/>
-                                    <field name="sequence" widget="handle"/>
-                                    <field name="odoo_attribute_id"/>
-                                    <field name="odoo_value_id"/>
-                                    <field name="platform_attr_name"/>
-                                    <field name="platform_attr_value"/>
-                                    <field name="is_mandatory" widget="boolean_toggle"/>
-                                </tree>
-                            </field>
-                        </page>
-
-                        <!-- TAB 3: Completeness -->
-                        <page string="ความสมบูรณ์" name="completeness">
-                            <field name="channel_completeness_ids" readonly="1">
-                                <tree>
-                                    <field name="channel_id"/>
-                                    <field name="total_required"/>
-                                    <field name="total_filled"/>
-                                    <field name="completeness_pct" widget="progressbar"/>
-                                    <field name="status" widget="badge"/>
-                                    <field name="missing_field_names"/>
-                                </tree>
-                            </field>
-                        </page>
-
-                        <!-- TAB 4: Sync Info -->
-                        <page string="Sync Info" name="sync_info">
-                            <group>
-                                <group string="Sync Status">
-                                    <field name="sync_status" widget="badge"/>
-                                    <field name="last_sync" readonly="1"/>
-                                    <field name="sync_message" readonly="1"/>
-                                </group>
-                                <group string="AI Auto-Fill">
-                                    <button name="ai_auto_fill_fields" type="object" string="AI Auto-Fill All" class="btn-primary"/>
-                                    <field name="ai_auto_fill_status"/>
-                                    <field name="ai_auto_fill_date" readonly="1"/>
-                                </group>
-                                <group string="AI Suggestions">
-                                    <button name="ai_suggest_barcode" type="object" string="Suggest Barcode" class="btn-info"/>
-                                    <field name="ai_barcode_suggestion" readonly="1"/>
-                                    <button name="ai_suggest_condition" type="object" string="Suggest Condition" class="btn-info"/>
-                                    <field name="ai_condition_suggestion" readonly="1"/>
-                                    <button name="ai_suggest_brand" type="object" string="Suggest Brand" class="btn-info"/>
-                                    <field name="ai_brand_suggestion" readonly="1"/>
-                                </group>
-                            </group>
-                        </page>
-                    </notebook>
                 </sheet>
             </form>
         </field>
     </record>
 
-    <!-- Search View -->
     <record id="view_channel_product_search" model="ir.ui.view">
         <field name="name">channel.product.search</field>
         <field name="model">channel.product</field>
         <field name="arch" type="xml">
-            <search string="Search">
+            <search>
+                <field name="name"/>
+                <field name="channel_id"/>
                 <field name="product_id"/>
-                <field name="product_category"/>
-                <separator/>
-                <filter name="shopee" string="Shopee" domain="[('channel_id.code', '=', 'shopee')]"/>
-                <filter name="lazada" string="Lazada" domain="[('channel_id.code', '=', 'lazada')]"/>
-                <filter name="tiktok" string="TikTok" domain="[('channel_id.code', '=', 'tiktok')]"/>
-                <separator/>
-                <filter name="condition_new" string="New" domain="[('condition', '=', 'new')]"/>
-                <filter name="condition_used" string="Used" domain="[('condition', '=', 'used')]"/>
-                <filter name="active" string="Active" domain="[('state', '=', 'active')]"/>
-                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
-                <filter name="synced" string="Synced" domain="[('sync_status', '=', 'synced')]"/>
-                <filter name="error" string="Error" domain="[('sync_status', '=', 'error')]"/>
-                <filter name="incomplete" string="Incomplete" domain="[('has_missing_required', '=', True)]"/>
-                <separator/>
-                <group expand="0" string="Group By">
-                    <filter name="by_channel" string="By Channel" context='{"group_by": "channel_id"}'/>
-                    <filter name="by_category" string="By Category" context='{"group_by": "product_category"}'/>
-                    <filter name="by_state" string="By Status" context='{"group_by": "state"}'/>
-                    <filter name="by_sync" string="By Sync" context='{"group_by": "sync_status"}'/>
-                </group>
             </search>
         </field>
     </record>
 
-    <!-- Action -->
     <record id="action_channel_product" model="ir.actions.act_window">
         <field name="name">Channel Products</field>
         <field name="res_model">channel.product</field>
         <field name="view_mode">tree,form</field>
-        <field name="context">{"search_default_filter_active": 1}</field>
-        <field name="help" type="html"><p class="o_view_nocontent_neutral_face">No products on channels yet</p></field>
     </record>
 </odoo>

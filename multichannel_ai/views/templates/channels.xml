@@ -1,39 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Channels List Page -->
-    <template id="channels_template" name="Channels">
-        <t t-call="multichannel_ai.frontend_layout">
-            <div class="mc-content">
-                <div class="mc-header">
-                    <h1><i class="fa fa-plug"/> Channels</h1>
-                    <p class="text-muted">จัดการช่องทางการขาย</p>
-                </div>
-
-                <div class="mc-cards">
-                    <t t-foreach="channels" t-as="ch">
-                        <div class="mc-card"
-                             t-attf-style="border-top: 4px solid #{
-                                 'ee4d2d' if ch.code == 'shopee'
-                                 else '0f146d' if ch.code == 'lazada'
-                                 else '000000' if ch.code == 'tiktok'
-                                 else '666666'}">
-                            <h3 t-esc="ch.name"/>
-                            <p>
-                                <span class="mc-status"
-                                      t-attf-class="mc-status-{{ 'active' if ch.active else 'inactive' }}">
-                                    <t t-esc="'Active' if ch.active else 'Inactive'"/>
-                                </span>
-                            </p>
-                            <p>
-                                <strong>Code:</strong> <t t-esc="ch.code"/>
-                            </p>
-                            <a t-attf-href="/multichannel/products?channel={{ ch.id }}"
-                               class="mc-btn mc-btn-primary">
-                                <i class="fa fa-cube"/> View Products
-                            </a>
-                        </div>
-                    </t>
-                </div>
+    <template id="multichannel_channels" name="Channels">
+        <t t-call="multichannel_ai.multichannel_layout">
+            <div class="o_portal_content">
+                <h1>Channels</h1>
             </div>
         </t>
     </template>

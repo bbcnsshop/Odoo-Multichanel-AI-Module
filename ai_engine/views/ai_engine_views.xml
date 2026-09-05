@@ -63,7 +63,7 @@
     
     <menuitem id="menu_ai_engine"
               name="AI Engine"
-              parent="base.menu_sales"
+              parent="sale.sale_menu_root"
               action="action_ai_engine"
               sequence="5"/>
 </odoo>

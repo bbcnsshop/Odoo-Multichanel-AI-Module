@@ -1,107 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- ============================================ -->
-    <!-- Tree View (List) -->
-    <!-- ============================================ -->
+    <!-- Tree View -->
     <record id="view_channel_config_tree" model="ir.ui.view">
         <field name="name">channel.config.tree</field>
         <field name="model">channel.config</field>
         <field name="arch" type="xml">
             <tree>
                 <field name="sequence" widget="handle"/>
-                <field name="icon"/>
                 <field name="name"/>
                 <field name="code"/>
+                <field name="platform"/>
                 <field name="active" widget="boolean_toggle"/>
-                <field name="product_count"/>
-                <field name="order_count"/>
             </tree>
         </field>
     </record>
 
-    <!-- ============================================ -->
     <!-- Form View -->
-    <!-- ============================================ -->
     <record id="view_channel_config_form" model="ir.ui.view">
         <field name="name">channel.config.form</field>
         <field name="model">channel.config</field>
         <field name="arch" type="xml">
             <form>
                 <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="action_test_connection" type="object" class="oe_stat_button" icon="fa-plug">
-                            <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_text">Test Connection</span>
-                            </div>
-                        </button>
-                        <button name="action_refresh_token" type="object" class="oe_stat_button" icon="fa-refresh">
-                            <div class="o_field_widget o_stat_info">
-                                <span class="o_stat_text">Refresh Token</span>
-                            </div>
-                        </button>
-                    </div>
-                    <div class="oe_title">
-                        <h1><field name="icon" readonly="1"/> <field name="name" placeholder="Channel Name"/></h1>
-                    </div>
                     <group>
                         <group string="Settings">
+                            <field name="name"/>
                             <field name="code"/>
+                            <field name="platform"/>
                             <field name="active"/>
                             <field name="sequence"/>
+                            <field name="company_id"/>
                         </group>
                         <group string="API Credentials">
+                            <field name="api_url"/>
+                            <field name="base_url"/>
+                            <field name="partner_id"/>
+                            <field name="partner_key" password="True"/>
                             <field name="shop_id"/>
-                            <field name="api_key" password="1"/>
-                            <field name="api_secret" password="1"/>
-                            <field name="access_token" password="1"/>
+                            <field name="access_token" password="True"/>
+                            <field name="refresh_token" password="True"/>
+                            <field name="token_expire_date"/>
                         </group>
                     </group>
                 </sheet>
             </form>
-
-    <!-- ============================================ -->
-    <!-- Kanban View -->
-    <!-- ============================================ -->
-    <record id="view_channel_config_kanban" model="ir.ui.view">
-        <field name="name">channel.config.kanban</field>
-        <field name="model">channel.config</field>
-        <field name="arch" type="xml">
-            <kanban>
-                <field name="name"/>
-                <field name="icon"/>
-                <field name="product_count"/>
-                <field name="order_count"/>
-                <field name="active"/>
-                <templates>
-                    <t t-name="kanban-box">
-                        <div t-attf-class="oe_kanban_global_click">
-                            <div class="o_kanban_record_top">
-                                <span class="o_kanban_record_title"><field name="icon"/> <field name="name"/></span>
-                            </div>
-                            <div class="o_kanban_record_body">
-                                <div><field name="product_count"/> Products</div>
-                                <div><field name="order_count"/> Orders</div>
-                            </div>
-                            <div class="o_kanban_record_bottom">
-                                <button name="action_test_connection" string="Test" type="object" class="btn btn-sm btn-secondary"/>
-                                <button name="action_view_products" string="Products" type="object" class="btn btn-sm btn-secondary"/>
-                            </div>
-                        </div>
-                    </t>
-                </templates>
-            </kanban>
         </field>
     </record>
 
-        </field>
-    </record>
-
-
-
-
-    <!-- ============================================ -->
     <!-- Search View -->
-    <!-- ============================================ -->
     <record id="view_channel_config_search" model="ir.ui.view">
         <field name="name">channel.config.search</field>
         <field name="model">channel.config</field>
@@ -115,12 +61,10 @@
         </field>
     </record>
 
-    <!-- ============================================ -->
     <!-- Action -->
-    <!-- ============================================ -->
     <record id="action_channel_config" model="ir.actions.act_window">
         <field name="name">Channel Configs</field>
         <field name="res_model">channel.config</field>
-        <field name="view_mode">tree,form,kanban</field>
+        <field name="view_mode">tree,form</field>
     </record>
 </odoo>

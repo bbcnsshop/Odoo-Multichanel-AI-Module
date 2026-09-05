@@ -1,84 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Category Mapping Views - Phase 11.2 -->
-
-    <!-- Tree View -->
-    <record id="view_category_mapping_tree" model="ir.ui.view">
+    <record id="view_product_category_mapping_tree" model="ir.ui.view">
         <field name="name">product.category.mapping.tree</field>
         <field name="model">product.category.mapping</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="channel_id"/>
-                <field name="channel_category_id"/>
                 <field name="channel_category_name"/>
                 <field name="odoo_category_id"/>
-                <field name="auto_map" widget="boolean_toggle"/>
-                <field name="active" widget="boolean_toggle"/>
             </tree>
         </field>
     </record>
-
-    <!-- Form View -->
-    <record id="view_category_mapping_form" model="ir.ui.view">
+    <record id="view_product_category_mapping_form" model="ir.ui.view">
         <field name="name">product.category.mapping.form</field>
         <field name="model">product.category.mapping</field>
         <field name="arch" type="xml">
-            <form>
-                <sheet>
-                    <group>
-                        <group string="Channel">
-                            <field name="channel_id" options="{'no_create': True}"/>
-                            <field name="active" widget="boolean_toggle"/>
-                        </group>
-                        <group string="Channel Category">
-                            <field name="channel_category_id"/>
-                            <field name="channel_category_name"/>
-                        </group>
-                    </group>
-                    <group>
-                        <group string="Odoo Category">
-                            <field name="odoo_category_id" options="{'no_create': True}"/>
-                        </group>
-                        <group string="Mapping Options">
-                            <field name="auto_map"/>
-                        </group>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
-    <!-- Search View -->
-    <record id="view_category_mapping_search" model="ir.ui.view">
-        <field name="name">product.category.mapping.search</field>
-        <field name="model">product.category.mapping</field>
-        <field name="arch" type="xml">
-            <search>
-                <field name="channel_id"/>
+            <form><sheet><group>
                 <field name="channel_category_name"/>
                 <field name="odoo_category_id"/>
-                <filter string="Active" name="active" domain="[('active', '=', True)]"/>
-                <filter string="Auto Map" name="auto_map" domain="[('auto_map', '=', True)]"/>
-                <group expand="0" string="Group By">
-                    <filter string="Channel" name="group_channel" context="{'group_by': 'channel_id'}"/>
-                    <filter string="Odoo Category" name="group_odoo" context="{'group_by': 'odoo_category_id'}"/>
-                </group>
-            </search>
+            </group></sheet></form>
         </field>
     </record>
-
-    <!-- Action -->
     <record id="action_category_mapping" model="ir.actions.act_window">
         <field name="name">Category Mappings</field>
         <field name="res_model">product.category.mapping</field>
         <field name="view_mode">tree,form</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                Create your first Category Mapping
-            </p>
-            <p>
-                Map Odoo product categories to channel-specific category IDs.
-            </p>
-        </field>
     </record>
 </odoo>

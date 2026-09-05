@@ -19,14 +19,13 @@
         "ai_engine"
     ],
     "data": [
-        "security/ir.model.access.csv",
         "security/res_groups.xml",
         "security/channel_config_rule.xml",
+        "security/ir.model.access.csv",
         "data/channel_data.xml",
         "data/default_field_mappings.xml",
         "data/category_mapping.xml",
         "data/cron.xml",
-        "views/channel_menus.xml",
         "views/channel_list_module_views.xml",
         "views/channel_config_views.xml",
         "views/channel_product_views.xml",
@@ -43,6 +42,8 @@
         "views/category_mapping_views.xml",
         "views/price_recommendation_views.xml",
         "views/product_template_views.xml",
+        "views/channel_product_ai_fill_views.xml",
+        "views/channel_menus.xml",
         "views/templates/layout.xml",
         "views/templates/dashboard.xml",
         "views/templates/channel_products.xml",
@@ -59,7 +60,7 @@
             "multichannel_ai/static/src/css/multichannel.css"
         ]
     },
-    "installable": true,
-    "application": true,
-    "auto_install": false
+    "installable": True,
+    "application": True,
+    "auto_install": False,
 }

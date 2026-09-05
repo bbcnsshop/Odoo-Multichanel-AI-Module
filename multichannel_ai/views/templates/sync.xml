@@ -1,50 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Sync Page -->
-    <template id="sync_template" name="Sync Manager">
-        <t t-call="multichannel_ai.frontend_layout">
-            <div class="mc-content">
-                <div class="mc-header">
-                    <h1><i class="fa fa-refresh"/> Sync Manager</h1>
-                    <p class="text-muted">ซิงค์สินค้าไปยังช่องทางต่างๆ</p>
-                </div>
-
-                <div class="mc-sync-grid">
-                    <t t-foreach="channels" t-as="ch">
-                        <div class="mc-sync-card">
-                            <div class="mc-sync-card-header"
-                                 t-attf-style="background: #{
-                                     'ee4d2d' if ch.code == 'shopee'
-                                     else '0f146d' if ch.code == 'lazada'
-                                     else '000000' if ch.code == 'tiktok'
-                                     else '666666'}">
-                                <h3 t-esc="ch.name"/>
-                            </div>
-                            <div class="mc-sync-card-body">
-                                <p>
-                                    <strong>Products:</strong>
-                                    <t t-esc="ch_stats.get(ch.id, {}).get('total', 0)"/>
-                                </p>
-                                <p>
-                                    <strong>Synced:</strong>
-                                    <t t-esc="ch_stats.get(ch.id, {}).get('synced', 0)"/>
-                                </p>
-                                <p>
-                                    <strong>Pending:</strong>
-                                    <t t-esc="ch_stats.get(ch.id, {}).get('pending', 0)"/>
-                                </p>
-                                <p>
-                                    <strong>Error:</strong>
-                                    <t t-esc="ch_stats.get(ch.id, {}).get('error', 0)"/>
-                                </p>
-                                <button class="mc-btn mc-btn-primary mc-btn-block"
-                                        t-attf-onclick="syncChannel({{ ch.id }}, '{{ ch.name }}')">
-                                    <i class="fa fa-refresh"/> Sync Now
-                                </button>
-                            </div>
-                        </div>
-                    </t>
-                </div>
+    <template id="multichannel_sync" name="Sync Manager">
+        <t t-call="multichannel_ai.multichannel_layout">
+            <div class="o_portal_content">
+                <h1>Sync Manager</h1>
             </div>
         </t>
     </template>
