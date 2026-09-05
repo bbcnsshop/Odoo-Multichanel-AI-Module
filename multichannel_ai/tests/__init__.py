@@ -27,3 +27,4 @@ from . import test_webhooks
 from . import test_reports
 from . import test_i18n
 from . import test_channel_order_line
+from . import test_channel_product_attribute

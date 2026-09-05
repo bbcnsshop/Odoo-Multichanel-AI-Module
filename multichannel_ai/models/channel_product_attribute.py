@@ -68,6 +68,29 @@ class ChannelProductAttribute(models.Model):
             'is_mandatory': self.is_mandatory,
         }
 
+    # ========== Additional Methods ==========
+    def _compute_display_name(self):
+        """Generate display name for attribute mapping."""
+        self.ensure_one()
+        return '%s / %s' % (self.platform_attr_name or '?', self.platform_attr_value or '?')
+
+    def action_duplicate_for_channel(self, target_channel_id):
+        """Duplicate this mapping to another channel."""
+        self.ensure_one()
+        new_mapping = self.copy({
+            'channel_id': target_channel_id,
+        })
+        return new_mapping
+
+    @api.model
+    def find_mapping(self, channel_id, odoo_attribute_id, odoo_value_id):
+        """Find existing mapping by attribute and value."""
+        return self.search([
+            ('channel_id', '=', channel_id),
+            ('odoo_attribute_id', '=', odoo_attribute_id),
+            ('odoo_value_id', '=', odoo_value_id),
+        ], limit=1)
+
 
 class ChannelProductVariant(models.Model):
     """Track variants (product.product records) per channel product."""

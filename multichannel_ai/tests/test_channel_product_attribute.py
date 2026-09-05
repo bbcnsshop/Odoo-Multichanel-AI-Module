@@ -1,102 +1,238 @@
 # -*- coding: utf-8 -*-
-# Test for channel.product.attribute model
-import unittest
-from unittest.mock import patch, MagicMock
-
+"""Test Channel Product Attribute Mapping models."""
 from odoo.tests import TransactionCase, tagged
 
 
-@tagged('post_install', '-at_install', 'multichannel')
+@tagged('post_install', '-at_install', 'multichannel', 'attribute')
 class TestChannelProductAttribute(TransactionCase):
     """Test channel.product.attribute model."""
 
     def setUp(self):
         super().setUp()
-        self.Attribute = self.env['channel.product.attribute']
+        self.ChannelProductAttribute = self.env['channel.product.attribute']
+        self.ChannelConfig = self.env['channel.config']
 
-        # Create test channel
-        channel_module = self.env.ref(
-            'multichannel_ai.channel_module_shopee',
-            raise_if_not_found=False,
-        ) or self.env['channel.list.module'].create({
+        channel_module = self.env['channel.list.module'].create({
             'name': 'Shopee',
             'code': 'shopee',
             'active': True,
         })
-        self.channel = self.env['channel.config'].create({
+        self.channel = self.ChannelConfig.create({
             'name': 'Test Shopee',
-            'code': 'shopee',
-            'channel_module_id': channel_module.id,
+            'code': 'shopee_test',
+            'platform': 'shopee',
             'active': True,
             'api_url': 'sandbox',
         })
 
-        # Create test channel product
-        self.channel_product = self.env['channel.product'].create({
-            'name': 'Test Channel Product',
+        # Create Odoo attribute and value
+        self.color_attr = self.env['product.attribute'].create({
+            'name': 'Color',
+            'display_type': 'color',
+        })
+        self.red_value = self.env['product.attribute.value'].create({
+            'name': 'Red',
+            'attribute_id': self.color_attr.id,
+        })
+
+    def test_create_attribute_mapping(self):
+        """Test creating attribute mapping."""
+        mapping = self.ChannelProductAttribute.create({
             'channel_id': self.channel.id,
-            'product_id': self.env['product.product'].create({
-                'name': 'Test Product',
-            }).id,
-            'channel_state': 'active',
+            'odoo_attribute_id': self.color_attr.id,
+            'odoo_value_id': self.red_value.id,
+            'platform_attr_name': 'Color',
+            'platform_attr_value': 'แดง',
+            'is_mandatory': True,
         })
+        self.assertTrue(mapping.id)
+        self.assertEqual(mapping.platform_attr_value, 'แดง')
 
-    def test_create_attribute(self):
-        """Test creating an attribute mapping."""
-        # Create Odoo attribute
-        odoo_attr = self.env['product.attribute'].create({
-            'name': 'Size',
+    def test_onchange_attribute(self):
+        """Test onchange sets platform_attr_name from attribute."""
+        mapping = self.ChannelProductAttribute.new({
+            'channel_id': self.channel.id,
         })
-        odoo_value = self.env['product.attribute.value'].create({
-            'name': 'L',
-            'attribute_id': odoo_attr.id,
-        })
+        mapping.odoo_attribute_id = self.color_attr
+        mapping._onchange_attribute()
+        self.assertEqual(mapping.platform_attr_name, 'Color')
 
-        attr = self.Attribute.create({
-            'channel_product_id': self.channel_product.id,
-            'odoo_attribute_id': odoo_attr.id,
-            'odoo_value_ids': [(6, 0, [odoo_value.id])],
-            'platform_attribute_name': 'size',
-            'platform_value_name': 'L',
+    def test_onchange_value(self):
+        """Test onchange sets platform_attr_value from value."""
+        mapping = self.ChannelProductAttribute.new({
+            'channel_id': self.channel.id,
         })
-        self.assertTrue(attr.id)
-        self.assertEqual(attr.platform_attribute_name, 'size')
+        mapping.odoo_value_id = self.red_value
+        mapping._onchange_value()
+        self.assertEqual(mapping.platform_attr_value, 'Red')
 
     def test_get_platform_variant_data(self):
-        """Test get_platform_variant_data returns correct format."""
-        # Create Odoo attribute
-        odoo_attr = self.env['product.attribute'].create({
+        """Test getting platform variant data dict."""
+        mapping = self.ChannelProductAttribute.create({
+            'channel_id': self.channel.id,
+            'odoo_attribute_id': self.color_attr.id,
+            'odoo_value_id': self.red_value.id,
+            'platform_attr_name': 'Color',
+            'platform_attr_value': 'Red',
+            'is_mandatory': True,
+        })
+        data = mapping.get_platform_variant_data()
+        self.assertEqual(data['attr_name'], 'Color')
+        self.assertEqual(data['attr_value'], 'Red')
+        self.assertTrue(data['is_mandatory'])
+
+    def test_compute_display_name(self):
+        """Test display name computation."""
+        mapping = self.ChannelProductAttribute.create({
+            'channel_id': self.channel.id,
+            'odoo_attribute_id': self.color_attr.id,
+            'odoo_value_id': self.red_value.id,
+            'platform_attr_name': 'Color',
+            'platform_attr_value': 'แดง',
+        })
+        name = mapping._compute_display_name()
+        self.assertIn('Color', name)
+        self.assertIn('แดง', name)
+
+    def test_find_mapping(self):
+        """Test finding mapping by attributes."""
+        mapping = self.ChannelProductAttribute.create({
+            'channel_id': self.channel.id,
+            'odoo_attribute_id': self.color_attr.id,
+            'odoo_value_id': self.red_value.id,
+            'platform_attr_name': 'Color',
+            'platform_attr_value': 'Red',
+        })
+        found = self.ChannelProductAttribute.find_mapping(
+            self.channel.id, self.color_attr.id, self.red_value.id
+        )
+        self.assertEqual(found.id, mapping.id)
+
+    def test_action_duplicate_for_channel(self):
+        """Test duplicating mapping to another channel."""
+        channel2 = self.ChannelConfig.create({
+            'name': 'Test Lazada',
+            'code': 'lazada_test',
+            'platform': 'lazada',
+            'active': True,
+            'api_url': 'sandbox',
+        })
+
+        original = self.ChannelProductAttribute.create({
+            'channel_id': self.channel.id,
+            'odoo_attribute_id': self.color_attr.id,
+            'odoo_value_id': self.red_value.id,
+            'platform_attr_name': 'Color',
+            'platform_attr_value': 'Red',
+            'is_mandatory': True,
+        })
+
+        duplicate = original.action_duplicate_for_channel(channel2.id)
+        self.assertNotEqual(duplicate.id, original.id)
+        self.assertEqual(duplicate.channel_id, channel2)
+        self.assertEqual(duplicate.odoo_attribute_id, self.color_attr)
+
+
+@tagged('post_install', '-at_install', 'multichannel', 'attribute')
+class TestChannelProductVariant(TransactionCase):
+    """Test channel.product.variant model."""
+
+    def setUp(self):
+        super().setUp()
+        self.ChannelProductVariant = self.env['channel.product.variant']
+        self.ChannelProduct = self.env['channel.product']
+        self.ChannelConfig = self.env['channel.config']
+
+        channel_module = self.env['channel.list.module'].create({
+            'name': 'TikTok',
+            'code': 'tiktok',
+            'active': True,
+        })
+        self.channel = self.ChannelConfig.create({
+            'name': 'Test TikTok',
+            'code': 'tiktok_test',
+            'platform': 'tiktok',
+            'active': True,
+            'api_url': 'sandbox',
+        })
+
+        # Create product with variants
+        self.product_template = self.env['product.template'].create({
+            'name': 'Test T-Shirt',
+            'type': 'product',
+        })
+
+        self.color_attr = self.env['product.attribute'].create({
             'name': 'Color',
         })
-        odoo_value = self.env['product.attribute.value'].create({
-            'name': 'Red',
-            'attribute_id': odoo_attr.id,
+        self.size_attr = self.env['product.attribute'].create({
+            'name': 'Size',
         })
 
-        attr = self.Attribute.create({
+        self.product_template.attribute_line_ids = [(0, 0, {
+            'attribute_id': self.color_attr.id,
+        })]
+
+        # Get variants
+        self.variant = self.product_template.product_variant_ids[0]
+
+        # Create channel product
+        self.channel_product = self.ChannelProduct.create({
+            'product_id': self.variant.id,
+            'channel_id': self.channel.id,
+        })
+
+    def test_create_variant_mapping(self):
+        """Test creating variant mapping."""
+        variant_mapping = self.ChannelProductVariant.create({
             'channel_product_id': self.channel_product.id,
-            'odoo_attribute_id': odoo_attr.id,
-            'odoo_value_ids': [(6, 0, [odoo_value.id])],
-            'platform_attribute_name': 'color',
-            'platform_value_name': 'Red',
+            'product_variant_id': self.variant.id,
+            'channel_price': 299.0,
+            'channel_qty': 100,
         })
-        data = attr.get_platform_variant_data()
-        self.assertIn('attribute', data or {})
-        self.assertIn('value', data or {})
+        self.assertTrue(variant_mapping.id)
+        self.assertEqual(variant_mapping.channel_price, 299.0)
 
-    def test_onchange_odoo_attribute(self):
-        """Test onchange fills platform_attribute_name."""
-        odoo_attr = self.env['product.attribute'].create({
-            'name': 'Material',
-        })
-        attr = self.Attribute.create({
+    def test_variant_attr_display(self):
+        """Test attribute display string."""
+        variant_mapping = self.ChannelProductVariant.create({
             'channel_product_id': self.channel_product.id,
-            'odoo_attribute_id': odoo_attr.id,
+            'product_variant_id': self.variant.id,
         })
-        attr._onchange_odoo_attribute()
-        # Should auto-fill platform_attribute_name
-        self.assertTrue(attr.platform_attribute_name or True)  # Depends on implementation
+        display = variant_mapping._variant_attr_display()
+        # Should return attribute string
+        self.assertIsInstance(display, str)
 
+    def test_name_get(self):
+        """Test name_get returns proper format."""
+        variant_mapping = self.ChannelProductVariant.create({
+            'channel_product_id': self.channel_product.id,
+            'product_variant_id': self.variant.id,
+        })
+        name = variant_mapping.name_get()
+        self.assertTrue(len(name) > 0)
+        self.assertEqual(name[0][0], variant_mapping.id)
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_variant_sync_status(self):
+        """Test sync status field."""
+        variant_mapping = self.ChannelProductVariant.create({
+            'channel_product_id': self.channel_product.id,
+            'product_variant_id': self.variant.id,
+            'sync_status': 'pending',
+        })
+        self.assertEqual(variant_mapping.sync_status, 'pending')
+
+        variant_mapping.sync_status = 'synced'
+        self.assertEqual(variant_mapping.sync_status, 'synced')
+
+    def test_variant_platform_fields(self):
+        """Test platform-specific fields."""
+        variant_mapping = self.ChannelProductVariant.create({
+            'channel_product_id': self.channel_product.id,
+            'product_variant_id': self.variant.id,
+            'platform_variant_id': 'TT-12345',
+            'platform_variant_url': 'https://tiktok.com/item/12345',
+            'channel_weight': 0.5,
+        })
+        self.assertEqual(variant_mapping.platform_variant_id, 'TT-12345')
+        self.assertEqual(variant_mapping.channel_weight, 0.5)
