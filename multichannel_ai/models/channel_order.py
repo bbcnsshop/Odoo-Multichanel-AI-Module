@@ -317,6 +317,25 @@ class ChannelOrder(models.Model):
         }
         return state_map.get(channel_state.lower() if channel_state else 'pending', 'pending')
 
+    def _update_sale_order_state(self, state):
+        """Update the linked sale order state.
+        
+        Called from sale.order when its state changes.
+        
+        Args:
+            state: New state from sale.order (e.g., 'sale_confirmed', 'cancelled')
+        """
+        if not self.sale_order_id:
+            return
+        
+        state_map = {
+            'sale_confirmed': 'confirmed',
+            'cancelled': 'cancelled',
+            'done': 'delivered',
+        }
+        channel_state = state_map.get(state, 'processing')
+        self.write({'state': channel_state})
+
     # ===========================
     # Cron Jobs (Phase 15)
     # ===========================
