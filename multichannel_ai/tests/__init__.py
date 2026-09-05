@@ -22,3 +22,4 @@ from . import test_crons
 from . import test_oauth
 from . import test_wizards
 from . import test_mixins
+from . import test_security
