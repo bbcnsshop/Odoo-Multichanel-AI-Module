@@ -21,3 +21,4 @@ from . import test_tiktok_connector
 from . import test_crons
 from . import test_oauth
 from . import test_wizards
+from . import test_mixins
