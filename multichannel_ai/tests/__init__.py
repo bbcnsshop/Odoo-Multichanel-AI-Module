@@ -19,3 +19,4 @@ from . import test_shopee_connector
 from . import test_lazada_connector
 from . import test_tiktok_connector
 from . import test_crons
+from . import test_oauth
