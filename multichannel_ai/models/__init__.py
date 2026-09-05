@@ -11,4 +11,6 @@ from . import sale_order_channel
 from . import product_product_channel
 from . import product_template_channel
 from . import channel_product_video
+from . import category_mapping
+from . import price_recommendation
 from . import connectors

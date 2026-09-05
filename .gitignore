@@ -39,4 +39,8 @@ temp/
 AI_PROFILE.md
 PROGRESS.md
 CHANGELOG.md
+.clinerules
+.cursorrules
+.aider*
+.roo/
 *.local.md

@@ -23,6 +23,11 @@ class ChannelProduct(models.Model):
     channel_qty = fields.Integer(string='Channel Stock', default=0)
     channel_url = fields.Char(string='Channel URL')
 
+    # Channel Category (auto-mapped from product.category.mapping)
+    channel_category_id = fields.Char(string='Channel Category ID', help='Category ID บน platform')
+    channel_category_name = fields.Char(string='Channel Category Name', help='ชื่อ category บน platform')
+    channel_category_mapping_id = fields.Many2one('product.category.mapping', string='Category Mapping')
+
     state = fields.Selection([
         ('draft', 'Draft'),
         ('active', 'Active'),
@@ -105,15 +110,6 @@ class ChannelProduct(models.Model):
     channel_completeness_ids = fields.One2many(
         'channel.product.completeness', 'channel_product_id', string='Completeness'
     )
-    image_ids = fields.One2many(
-        'channel.product.image', 'channel_product_id', string='Images'
-    )
-    variant_ids = fields.One2many(
-        'channel.product.variant', 'channel_product_id', string='Variants'
-    )
-    attribute_mapping_ids = fields.One2many(
-        'channel.product.attribute', 'channel_product_id', string='Attribute Mappings'
-    )
     completeness_pct = fields.Float(string='% Complete', digits=(5, 1),
                                     compute='_compute_completeness', store=True)
     has_missing_required = fields.Boolean(string='Missing Required',
@@ -189,19 +185,68 @@ class ChannelProduct(models.Model):
         if self.product_id:
             self.channel_price = self.product_id.list_price or 0
             self.channel_qty = int(self.product_id.qty_available or 0)
+            # Auto-map channel category from Odoo category
+            self._auto_map_category()
+
+    def _auto_map_category(self):
+        """Auto-find channel category from product.category.mapping.
+
+        ถ้ามี mapping ใน product.category.mapping สำหรับ Odoo category นี้
+        จะ set channel_category_id และ channel_category_name ให้อัตโนมัติ
+        """
+        self.ensure_one()
+        if not (self.product_id and self.product_id.categ_id and self.channel_id):
+            return
+        mapping = self.env['product.category.mapping'].search([
+            ('channel_id', '=', self.channel_id.id),
+            ('odoo_category_id', '=', self.product_id.categ_id.id),
+            ('auto_map', '=', True),
+            ('active', '=', True),
+        ], limit=1)
+        if mapping:
+            self.channel_category_id = mapping.channel_category_id
+            self.channel_category_name = mapping.channel_category_name
+            self.channel_category_mapping_id = mapping.id
 
     @api.onchange('channel_id')
     def _onchange_channel(self):
         if self.channel_id and self.product_id:
-            try:
-                ai = self.env['ai.engine'].get_default_engine()
-                result = ai.recommend_price(
-                    {'name': self.product_id.name, 'cost': self.product_id.standard_price or 0},
-                    self.channel_id.code
-                )
-                self.ai_recommended_price = result.get('selling_price', 0)
-            except Exception:
-                pass
+            self._call_ai_recommend_price()
+
+    def _call_ai_recommend_price(self):
+        """Call AI engine to get price recommendation and create price.recommendation record.
+
+        Returns:
+            dict: AI result with selling_price, confidence, reasoning
+        """
+        self.ensure_one()
+        if not (self.channel_id and self.product_id):
+            return {}
+        try:
+            ai = self.env['ai.engine'].get_default_engine()
+            result = ai.recommend_price(
+                {'name': self.product_id.name, 'cost': self.product_id.standard_price or 0},
+                self.channel_id.code
+            )
+            self.ai_recommended_price = result.get('selling_price', 0)
+            self.ai_confidence = result.get('confidence', 0)
+
+            # Create price.recommendation record for tracking
+            self.env['price.recommendation'].create({
+                'product_id': self.product_id.id,
+                'channel_id': self.channel_id.id,
+                'ai_recommended_price': result.get('selling_price', 0),
+                'recommended_reasoning': result.get('reasoning', ''),
+                'cost_price': self.product_id.standard_price or 0,
+                'platform_fee': result.get('platform_fee', 0),
+                'payment_fee': result.get('payment_fee', 0),
+                'shipping_fee': result.get('shipping_fee', 0),
+                'status': 'pending',
+            })
+            return result
+        except Exception as e:
+            _logger.warning('AI price recommend error for %s: %s' % (self.name, str(e)))
+            return {}
 
     def action_check_completeness(self):
         for rec in self:
@@ -601,33 +646,6 @@ class ChannelProduct(models.Model):
         
         _logger.info('Cron AI auto-fill: %d filled, %d errors' % (filled_count, error_count))
         return True
-
-
-class ProductCategoryMapping(models.Model):
-    _name = 'product.category.mapping'
-    _description = 'Category Mapping'
-
-    channel_id = fields.Many2one('channel.config', string='Channel', required=True)
-    channel_category_id = fields.Char(string='Channel Category ID', required=True)
-    channel_category_name = fields.Char(string='Channel Category Name')
-    odoo_category_id = fields.Many2one('product.category', string='Odoo Category', required=True)
-    auto_map = fields.Boolean(string='Auto Map', default=True)
-
-
-class PriceRecommendation(models.Model):
-    _name = 'price.recommendation'
-    _description = 'Price Recommendation'
-    _order = 'create_date desc'
-
-    product_id = fields.Many2one('product.product', string='Product', required=True)
-    channel_id = fields.Many2one('channel.config', string='Channel', required=True)
-    ai_recommended_price = fields.Float(string='AI Recommended Price')
-    recommended_reasoning = fields.Text(string='Reasoning')
-    cost_price = fields.Float(string='Cost Price')
-    status = fields.Selection([
-        ('pending', 'Pending'),
-        ('accepted', 'Accepted'),
-        ('rejected', 'Rejected'),
-        ('applied', 'Applied'),
-    ], string='Status', default='pending')
-    create_date = fields.Datetime(string='Created', default=fields.Datetime.now)
+# ProductCategoryMapping and PriceRecommendation moved to:
+# - models/category_mapping.py
+# - models/price_recommendation.py

@@ -120,44 +120,6 @@ class ChannelOrderLine(models.Model):
             line.subtotal = line.quantity * line.unit_price
             line.tax_amount = line.subtotal * 0.07
             line.total_amount = line.subtotal + line.tax_amount
-
-
-class ProductCategoryMapping(models.Model):
-    _name = 'product.category.mapping'
-    _description = 'Product Category Mapping'
-    channel_id = fields.Many2one('channel.config', string='Channel', required=True)
-    channel_category_id = fields.Char(string='Channel Category ID', required=True)
-    channel_category_name = fields.Char(string='Channel Category Name')
-    odoo_category_id = fields.Many2one('product.category', string='Odoo Category', required=True)
-    auto_map = fields.Boolean(string='Auto Map', default=True)
-
-
-class PriceRecommendation(models.Model):
-    _name = 'price.recommendation'
-    _description = 'Price Recommendation'
-    _order = 'create_date desc'
-    product_id = fields.Many2one('product.product', string='Product', required=True)
-    channel_id = fields.Many2one('channel.config', string='Channel', required=True)
-    ai_recommended_price = fields.Float(string='AI Recommended Price')
-    recommended_reasoning = fields.Text(string='Recommendation Reasoning')
-    cost_price = fields.Float(string='Cost Price')
-    gross_profit = fields.Float(string='Gross Profit', compute='_compute_profit', store=True)
-    gross_margin = fields.Float(string='Gross Margin %', compute='_compute_margin', store=True)
-    platform_fee = fields.Float(string='Platform Fee')
-    payment_fee = fields.Float(string='Payment Fee')
-    shipping_fee = fields.Float(string='Shipping Fee')
-    vat_amount = fields.Float(string='VAT Amount')
-    net_profit = fields.Float(string='Net Profit', compute='_compute_net_profit', store=True)
-    status = fields.Selection([('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected'), ('applied', 'Applied')], string='Status', default='pending')
-    
-    @api.depends('ai_recommended_price', 'cost_price')
-    def _compute_profit(self):
-        for rec in self: rec.gross_profit = rec.ai_recommended_price - rec.cost_price
-    
-    @api.depends('gross_profit', 'ai_recommended_price')
-    def _compute_margin(self):
-        for rec in self: rec.gross_margin = (rec.gross_profit / rec.ai_recommended_price * 100) if rec.ai_recommended_price else 0.0
-    
-    @api.depends('platform_fee', 'payment_fee', 'shipping_fee', 'vat_amount', 'gross_profit')
-    def _compute_net_profit(self):
-        for rec in self: rec.net_profit = rec.gross_profit - rec.platform_fee - rec.payment_fee - rec.shipping_fee - rec.vat_amount
+# ProductCategoryMapping and PriceRecommendation moved to:
+# - models/category_mapping.py
+# - models/price_recommendation.py

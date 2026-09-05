@@ -44,6 +44,11 @@
                         </button>
                         <button class="oe_stat_button" name="action_view_videos" type="object" icon="fa-video-camera">
                             <field name="video_count" widget="statinfo" string="Videos"/>
+<button name="action_upload_image" type="object" class="oe_stat_button" icon="fa-upload" context="{'default_channel_product_id': self.id}">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_text">Upload Image</span>
+                        </div>
+                    </button>
                         </button>
                         <button class="oe_stat_button" name="action_check_completeness" type="object" icon="fa-check-circle-o">
                             <field name="completeness_pct" widget="statinfo" string="Complete"/>
