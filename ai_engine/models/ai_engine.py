@@ -74,16 +74,60 @@ class AIEngine(models.Model):
             _logger.error(f'AI classification failed: {str(e)}')
             return {'category_id': False, 'category_name': 'Error', 'confidence': 0, 'reasoning': str(e), 'suggested_tags': []}
     
-    def recommend_price(self, product_data, channel_code, target_margin=30.0):
+    def recommend_price(self, product_data, channel_code='shopee', target_margin=30.0):
+        """Recommend selling price for a product on a specific channel.
+
+        Smart routing:
+        - ถ้ามี OpenRouter API key → ใช้ AI แนะนำราคา
+        - ถ้าไม่มี → ใช้ formula calculation fallback
+        """
         self.ensure_one()
-        prompt = f'You are a pricing expert for IT equipment in Thailand. Product: {product_data.get("name", "")}, Cost: {product_data.get("cost", 0):,.0f} THB, Target Margin: {target_margin}%. Platform Fees: Shopee 5/2/2.5%, Lazada 5/2/3%, TikTok 3.5/1.5/2%. VAT 7%. Return JSON: selling_price, gross_profit, net_profit, net_margin, recommendation.'
-        try:
-            import json
-            response = self._call_ai(prompt)
-            return json.loads(response)
-        except Exception as e:
-            _logger.error(f'AI pricing failed: {str(e)}')
-            return {'channel': channel_code, 'selling_price': 0, 'error': str(e)}
+        # Try AI-based recommendation if API key is configured
+        if self.provider == 'openrouter' and self.openrouter_api_key:
+            try:
+                prompt = (
+                    f'You are a pricing expert for IT equipment in Thailand. '
+                    f'Product: {product_data.get("name", "")}, '
+                    f'Cost: {product_data.get("cost", 0):,.0f} THB, '
+                    f'Target Margin: {target_margin}%. '
+                    f'Platform Fees: Shopee 5/2/2.5%, Lazada 5/2/3%, TikTok 3.5/1.5/2%. VAT 7%. '
+                    f'Return JSON: selling_price, gross_profit, net_profit, net_margin, recommendation.'
+                )
+                import json
+                response = self._call_ai(prompt)
+                result = json.loads(response)
+                result.setdefault('channel', channel_code)
+                result['_source'] = 'ai'
+                return result
+            except Exception as e:
+                _logger.warning('AI pricing failed, fallback to formula: %s', str(e))
+
+        # Fallback: formula-based calculation
+        return self._calculate_formula_price(product_data, channel_code, target_margin)
+
+    def _calculate_formula_price(self, product_data, channel_code='shopee', margin_target=30.0):
+        """Formula-based price recommendation (no AI required)."""
+        cost = product_data.get('cost', 0) or 0
+        margin_target = product_data.get('margin', margin_target) or margin_target
+        fee_config = self._get_fee_config(channel_code)
+        commission = fee_config['commission']
+        payment_fee = fee_config['payment_fee']
+        shipping_subsidy = fee_config['shipping_subsidy']
+        vat = self.vat_rate or 7.0
+        total_fee_pct = (commission + payment_fee + shipping_subsidy) / 100.0
+        vat_factor = 1 + vat / 100.0
+        divisor = (1 - total_fee_pct) * vat_factor
+        if divisor <= 0:
+            divisor = 0.7
+        selling_price = max(cost, cost * (1 + margin_target / 100.0) / divisor)
+        return {
+            'selling_price': round(selling_price, 2),
+            'cost': cost,
+            'target_margin': margin_target,
+            'channel': channel_code,
+            'fee_breakdown': fee_config,
+            '_source': 'formula',
+        }
 
     def calculate_profit(self, selling_price, cost, channel_code):
         self.ensure_one()
@@ -153,30 +197,6 @@ class AIEngine(models.Model):
             return response.json().get('response', '')
         except ImportError: raise ValidationError(_('requests library not available'))
 
-
-    def recommend_price(self, product_data, channel_code='shopee'):
-        """Recommend selling price for a product on a specific channel."""
-        self.ensure_one()
-        cost = product_data.get('cost', 0) or 0
-        margin_target = product_data.get('margin', 30.0) or 30.0
-        fee_config = self._get_fee_config(channel_code)
-        commission = fee_config['commission']
-        payment_fee = fee_config['payment_fee']
-        shipping_subsidy = fee_config['shipping_subsidy']
-        vat = self.vat_rate or 7.0
-        total_fee_pct = (commission + payment_fee + shipping_subsidy) / 100.0
-        vat_factor = 1 + vat / 100.0
-        divisor = (1 - total_fee_pct) * vat_factor
-        if divisor <= 0:
-            divisor = 0.7
-        selling_price = max(cost, cost * (1 + margin_target / 100.0) / divisor)
-        return {
-            'selling_price': round(selling_price, 2),
-            'cost': cost,
-            'target_margin': margin_target,
-            'channel': channel_code,
-            'fee_breakdown': fee_config,
-        }
 
     def _create_category_mapping(self, product_name, category_id, confidence):
         if confidence < 0.5: return

@@ -453,7 +453,7 @@ class ChannelProductVideo(models.Model):
     def action_upload_to_platforms(self):
         success_count = 0
         error_messages = []
-        
+
         for record in self:
             if record.state != 'ready':
                 continue
@@ -462,27 +462,14 @@ class ChannelProductVideo(models.Model):
                 video_data = record._get_video_binary()
                 if not video_data:
                     raise UserError(_('No video data available'))
-                
-                # Upload to current channel
-                platform = record.channel_id.platform
-                if platform == 'shopee':
-                    result = record._upload_to_shopee(video_data)
-                    if result.get('success'):
-                        success_count += 1
-                    else:
-                        error_messages.append(f"Shopee: {result.get('error')}")
-                elif platform == 'lazada':
-                    result = record._upload_to_lazada(video_data)
-                    if result.get('success'):
-                        success_count += 1
-                    else:
-                        error_messages.append(f"Lazada: {result.get('error')}")
-                elif platform == 'tiktok':
-                    result = record._upload_to_tiktok(video_data)
-                    if result.get('success'):
-                        success_count += 1
-                    else:
-                        error_messages.append(f"TikTok: {result.get('error')}")
+
+                # Single connector call (auto-routes by platform)
+                platform = (record.channel_id.channel_code or record.channel_id.code or '').lower()
+                result = record._upload_to_connector(video_data)
+                if result.get('success'):
+                    success_count += 1
+                else:
+                    error_messages.append(f"{platform or 'unknown'}: {result.get('error')}")
                 
                 if success_count > 0:
                     record.state = 'uploaded'
@@ -506,46 +493,46 @@ class ChannelProductVideo(models.Model):
             },
         }
 
-    def _upload_to_shopee(self, video_data):
+    def _upload_to_connector(self, video_data):
+        """Upload video via connectors/* (single source of truth)."""
         self.ensure_one()
         try:
-            if self.channel_id.platform != 'shopee':
-                return {'success': False, 'error': 'Not Shopee channel'}
-            import time
-            video_id = f"shopee_{int(time.time())}"
-            self.write({'shopee_video_id': video_id})
-            _logger.info('Uploaded to Shopee: %s', video_id)
-            return {'success': True, 'video_id': video_id}
+            channel_config = self.env['channel.config'].browse(self.channel_id.id)
+            # Try channel mixin first, fallback to factory
+            connector = (
+                self.channel_id.get_connector()
+                if hasattr(self.channel_id, 'get_connector')
+                else None
+            )
+            if connector is None:
+                from odoo.addons.multichannel_ai.models.connectors import get_connector
+                connector = get_connector(channel_config)
+            # Call connector upload_video (if implemented), else fallback to mock write
+            if hasattr(connector, 'upload_video'):
+                result = connector.upload_video(video_data, filename='video.mp4')
+                video_id = result.get('video_id') or result.get('image_id')
+                url = result.get('video_url') or result.get('image_url')
+            else:
+                # Fallback: write mock video_id
+                import time
+                code = (channel_config.channel_code or channel_config.code or 'unknown').lower()
+                video_id = f'{code}_video_{int(time.time())}'
+                url = f'https://mock.{code}.com/videos/{video_id}'
+            # Map result to model fields
+            platform = (channel_config.channel_code or channel_config.code or '').lower()
+            vals = {}
+            if platform == 'shopee':
+                vals['shopee_video_id'] = video_id
+            elif platform == 'lazada':
+                vals['lazada_video_id'] = video_id
+            elif platform == 'tiktok':
+                vals['tiktok_video_id'] = video_id
+            vals['video_url'] = url
+            self.write(vals)
+            _logger.info('Uploaded video to %s: %s', platform, video_id)
+            return {'success': True, 'video_id': video_id, 'video_url': url}
         except Exception as e:
-            _logger.error('Shopee upload error: %s', str(e))
-            return {'success': False, 'error': str(e)}
-
-    def _upload_to_lazada(self, video_data):
-        self.ensure_one()
-        try:
-            if self.channel_id.platform != 'lazada':
-                return {'success': False, 'error': 'Not Lazada channel'}
-            import time
-            video_id = f"lazada_{int(time.time())}"
-            self.write({'lazada_video_id': video_id})
-            _logger.info('Uploaded to Lazada: %s', video_id)
-            return {'success': True, 'video_id': video_id}
-        except Exception as e:
-            _logger.error('Lazada upload error: %s', str(e))
-            return {'success': False, 'error': str(e)}
-
-    def _upload_to_tiktok(self, video_data):
-        self.ensure_one()
-        try:
-            if self.channel_id.platform != 'tiktok':
-                return {'success': False, 'error': 'Not TikTok channel'}
-            import time
-            video_id = f"tiktok_{int(time.time())}"
-            self.write({'tiktok_video_id': video_id})
-            _logger.info('Uploaded to TikTok: %s', video_id)
-            return {'success': True, 'video_id': video_id}
-        except Exception as e:
-            _logger.error('TikTok upload error: %s', str(e))
+            _logger.error('Connector upload error: %s', str(e))
             return {'success': False, 'error': str(e)}
 
     def action_resync_to_platforms(self):

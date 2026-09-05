@@ -222,26 +222,6 @@ class MainController(http.Controller):
         
         result = ai_engine.recommend_price(product_data, channel_code)
         return result
-    @http.route('/multichannel/api/pricing', type='json', auth='user', methods=['POST'])
-    def calculate_pricing(self, **kwargs):
-        """API to calculate pricing with AI"""
-        product_id = kwargs.get('product_id')
-        channel_code = kwargs.get('channel_code')
-        
-        if not product_id or not channel_code:
-            return {'error': 'Missing product_id or channel_code'}
-        
-        product = request.env['product.product'].browse(int(product_id))
-        ai_engine = request.env['ai.engine'].get_default_engine()
-        
-        product_data = {
-            'name': product.display_name,
-            'cost': product.standard_price,
-            'category': product.categ_id.name if product.categ_id else 'IT Equipment'
-        }
-        
-        result = ai_engine.recommend_price(product_data, channel_code)
-        return result
 
     @http.route('/multichannel/field_mappings', type='http', auth='user', website=False)
     def field_mappings_page(self, channel_id=None, **kwargs):

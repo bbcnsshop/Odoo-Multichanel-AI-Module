@@ -23,14 +23,10 @@
         "security/res_groups.xml",
         "security/channel_config_rule.xml",
         "data/channel_data.xml",
-
-        "data/channel_data.xml",
         "data/default_field_mappings.xml",
-        "data/category_mapping.xml",
         "data/category_mapping.xml",
         "data/cron.xml",
         "views/channel_menus.xml",
-
         "views/channel_list_module_views.xml",
         "views/channel_config_views.xml",
         "views/channel_product_views.xml",
@@ -44,6 +40,8 @@
         "views/channel_product_image_views.xml",
         "views/channel_product_video_views.xml",
         "views/channel_product_attribute_views.xml",
+        "views/category_mapping_views.xml",
+        "views/price_recommendation_views.xml",
         "views/product_template_views.xml",
         "views/templates/layout.xml",
         "views/templates/dashboard.xml",

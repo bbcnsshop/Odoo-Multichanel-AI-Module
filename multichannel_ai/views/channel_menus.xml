@@ -63,6 +63,20 @@
                   sequence="20"
                   groups="multichannel_ai.group_multichannel_manager"/>
 
+        <menuitem id="menu_category_mapping"
+                  name="Category Mappings"
+                  parent="menu_online_sales_root"
+                  action="action_category_mapping"
+                  sequence="25"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
+        <menuitem id="menu_price_recommendation"
+                  name="Price Recommendations"
+                  parent="menu_online_sales_root"
+                  action="action_price_recommendation"
+                  sequence="30"
+                  groups="multichannel_ai.group_multichannel_manager"/>
+
         <!-- =========================================================
              FRONTEND WEB MENUS (Both User and Manager)
              ========================================================= -->
