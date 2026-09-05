@@ -18,3 +18,4 @@ from . import test_product_product_channel
 from . import test_shopee_connector
 from . import test_lazada_connector
 from . import test_tiktok_connector
+from . import test_crons
