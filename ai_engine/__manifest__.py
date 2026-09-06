@@ -3,27 +3,9 @@
     'version': '16.0.1.0',
     'category': 'Artificial Intelligence',
     'summary': 'AI Engine with OpenRouter, OpenAI, Claude support for product classification and pricing',
-    'description': """
-AI Engine - OpenRouter Integration
-====================================
-AI-powered product classification and pricing recommendations.
-
-Features:
-- OpenRouter API integration (GPT-4, Claude, Gemini, Llama, etc.)
-- Local LLM support (Ollama)
-- AI product classification
-- AI pricing recommendations
-- Profit and fee calculations (Thailand market)
-
-Thailand Fee Configuration:
-- Shopee: 5% commission, 2% payment fee, 2.5% shipping
-- Lazada: 5% commission, 2% payment fee, 3% shipping
-- TikTok Shop: 3.5% commission, 1.5% payment fee, 2% shipping
-
-All calculations include Thai VAT 7%.
-    """,
-    'author': 'Your Company',
-    'website': 'https://yourcompany.com',
+    'description': """AI Engine - OpenRouter Integration for Odoo 16. AI-powered product classification and pricing recommendations.""",
+    'author': 'BBCNS Shop',
+    'website': 'https://github.com/bbcnsshop/Odoo-Multichanel-AI-Module',
     'license': 'LGPL-3',
     'depends': [
         'base',

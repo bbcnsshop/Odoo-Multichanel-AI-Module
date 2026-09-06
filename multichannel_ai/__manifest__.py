@@ -4,8 +4,8 @@
     "category": "Sales",
     "summary": "Multi-channel e-commerce integration (Shopee, Lazada, TikTok Shop) with AI engine",
     "description": "Multi-Channel E-Commerce Integration for Odoo 16. Integrates with Shopee, Lazada, TikTok Shop via OpenRouter AI engine. Features: Channel product management with AI-powered pricing, Bulk add/remove products to channels, Bidirectional sync, Channel order webhook ingestion, Profit margin calculator, Sale order channel tracking, Data completeness validation.",
-    "author": "Your Company",
-    "website": "https://yourcompany.com",
+    "author": "BBCNS Shop",
+    "website": "https://github.com/bbcnsshop/Odoo-Multichanel-AI-Module",
     "license": "LGPL-3",
     "depends": [
         "base",

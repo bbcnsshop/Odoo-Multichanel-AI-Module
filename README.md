@@ -4,11 +4,15 @@
 
 รองรับ Shopee, Lazada, TikTok Shop - รวม Sync, OAuth, AI Auto-Fill
 
-**🧪 Tested:** ~370 tests across 30+ test files — 5 ก.ย. 2569
+**🧪 Tested:** ~370 tests across 30+ test files — 6 ก.ย. 2569
 
 **📊 Coverage:** 16/20 models at 100% + Wizards + Mixins + Connectors (Shopee/Lazada/TikTok) + Cron + OAuth + i18n
 
-**✅ Phases 14-30 Complete:** More Tests, Order Implementation, Connector Implementation, View Buttons, Connector Tests, Cron Tests, OAuth Tests, Wizard Tests, Mixin Tests, Code Quality Check, Model Enhancement, i18n Check
+**✅ Phases 1-38 Complete:** ai_engine + multichannel_ai installed on server
+
+**📦 Modules:**
+- `ai_engine` - AI Product Classification & Price Recommendation (OpenRouter)
+- `multichannel_ai` - Multi-Channel E-Commerce Integration
 
 ---
 
